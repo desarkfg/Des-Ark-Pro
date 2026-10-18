@@ -1,0 +1,2606 @@
+<!DOCTYPE html>
+<html lang="it" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Des'Ark CantierePro — Arch. Romolo S. de Seneen (Foggia n. 650)</title>
+  
+  <!-- Apple iOS and macOS Web App Metatags -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Des'Ark Pro">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="theme-color" content="#090d16">
+
+  <!-- Core CDNs -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone@7.24.0/babel.min.js"></script>
+
+  <!-- Google Font Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#fffbeb',
+              100: '#fef3c7',
+              400: '#fbbf24',
+              500: '#f59e0b',
+              600: '#d97706',
+              950: '#090d16'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0b1120; }
+    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 9999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #334155; }
+    
+    /* Touch optimizations */
+    html, body {
+      overscroll-behavior-y: none;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    input, textarea, [contenteditable="true"] {
+      user-select: text;
+    }
+
+    /* Print styles */
+    @media print {
+      body { background: white !important; color: black !important; }
+      header, nav, .no-print, button { display: none !important; }
+      .print-only { display: block !important; }
+      .printable-document {
+        box-shadow: none !important;
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+        color: #111827 !important;
+        background: #ffffff !important;
+      }
+    }
+  </style>
+</head>
+<body class="bg-[#090d16] text-slate-100 font-sans antialiased min-h-screen">
+
+  <div id="root">
+    <div class="min-h-screen flex flex-col items-center justify-center p-6 text-center space-y-4">
+      <div class="w-16 h-16 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+      <div>
+        <h2 class="text-xl font-black tracking-widest text-white uppercase font-sans">DES'ARK STUDIO</h2>
+        <p class="text-xs text-amber-400 font-mono mt-1">Caricamento Suite CantierePro • Arch. Romolo S. de Seneen</p>
+        <span class="text-[11px] text-slate-500 block mt-2">Ordine Architetti PPC Provincia di Foggia n. 650</span>
+      </div>
+    </div>
+  </div>
+
+  <script type="text/babel" data-presets="react">
+    const { useState, useMemo, useEffect, useRef } = React;
+
+    const SafeStorage = {
+      getItem: (key) => {
+        try { return localStorage.getItem(key); } catch (e) { return null; }
+      },
+      setItem: (key, val) => {
+        try { localStorage.setItem(key, val); } catch (e) {}
+      }
+    };
+
+    const SVG_ICONS = {
+      building: <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18ZM6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2ZM18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2ZM10 6h4M10 10h4M10 14h4M10 18h4"/>,
+      ruler: <path d="m21.73 4.27-2-2a2 2 0 0 0-2.83 0L3.13 16.04a2 2 0 0 0 0 2.83l2 2a2 2 0 0 0 2.83 0L21.73 7.1a2 2 0 0 0 0-2.83ZM16.07 7.07l-2.12 2.12M13.24 9.9l-2.12 2.12M10.41 12.73l-2.12 2.12M7.59 15.56l-2.12 2.12"/>,
+      layers: <path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.9a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83ZM2 12l8.58 3.9a2 2 0 0 0 1.66 0L21 12M2 17l8.58 3.9a2 2 0 0 0 1.66 0L21 17"/>,
+      fileText: <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2zM14 2v6h6M16 13H8M16 17H8M10 9H8"/>,
+      spreadsheet: <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7l-5-5zM14 2v6h6M8 13h8M8 17h8M8 9h2M12 13v8"/>,
+      shield: <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>,
+      calendar: <path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zM8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"/>,
+      camera: <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3zM12 17a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/>,
+      users: <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>,
+      folderGit: <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2ZM8 12a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM8 12v4M16 12a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM16 12v4"/>,
+      hardhat: <path d="M2 18a1 1 0 0 0 1 1h18a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v2ZM10 10V5a2 2 0 0 1 4 0v5M6 15a6 6 0 0 1 12 0"/>,
+      printer: <path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6z"/>,
+      plus: <path d="M12 5v14M5 12h14"/>,
+      trash: <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6"/>,
+      edit: <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>,
+      check: <polyline points="20 6 9 17 4 12"/>,
+      x: <path d="M18 6 6 18M6 6l12 12"/>,
+      copy: <path d="M8 4v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7.5L16.5 4H10a2 2 0 0 0-2 2ZM4 16H2V4a2 2 0 0 1 2-2h12v2"/>,
+      download: <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>,
+      upload: <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>,
+      sparkles: <path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3L12 3z"/>,
+      search: <path d="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16ZM21 21l-4.35-4.35"/>,
+      sync: <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.3"/>,
+      smartphone: <g><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><path d="M12 18h.01"/></g>,
+      laptop: <path d="M20 16V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v9m16 0H4m16 0 1.28 2.55A1 1 0 0 1 20.38 20H3.62a1 1 0 0 1-.9-1.45L4 16"/>,
+      mail: <g><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></g>,
+      share: <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/>
+    };
+
+    function Icon({ name, className = "w-4 h-4" }) {
+      const iconData = SVG_ICONS[name] || SVG_ICONS.building;
+      return (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className={className}
+        >
+          {iconData}
+        </svg>
+      );
+    }
+
+    function DesArkLogo({ className = "w-10 h-10", showText = false, textClassName = "text-white" }) {
+      return (
+        <div className="flex items-center gap-3">
+          <svg viewBox="0 0 200 200" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M100 20 L170 60 L170 140 L100 180 L30 140 L30 60 Z" stroke="#f59e0b" strokeWidth="8" strokeLinejoin="round"/>
+            <path d="M100 20 L100 100 L170 60" stroke="#f59e0b" strokeWidth="8" strokeLinejoin="round"/>
+            <path d="M100 100 L30 60" stroke="#f59e0b" strokeWidth="8" strokeLinejoin="round"/>
+            <path d="M100 100 L100 180" stroke="#f59e0b" strokeWidth="8" strokeLinejoin="round"/>
+            <path d="M30 60 Q100 70 85 180" stroke="#fbbf24" strokeWidth="7" fill="none"/>
+            <path d="M170 60 Q100 70 115 180" stroke="#fbbf24" strokeWidth="7" fill="none"/>
+            <path d="M125 125 L170 95" stroke="#fbbf24" strokeWidth="7"/>
+          </svg>
+          {showText && (
+            <div className="flex flex-col text-left">
+              <span className={`font-black tracking-widest text-base uppercase leading-none ${textClassName}`}>
+                DES'ARK
+              </span>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className="w-2.5 h-[1.5px] bg-amber-400"></span>
+                <span className="text-[10px] font-bold tracking-[0.2em] text-amber-400 uppercase">STUDIO</span>
+                <span className="w-2.5 h-[1.5px] bg-amber-400"></span>
+              </div>
+              <span className="text-[8px] text-slate-400 tracking-wider uppercase font-semibold mt-0.5">
+                Arch. Romolo S. de Seneen • FG 650
+              </span>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    const GeminiService = {
+      apiKey: "", // Injected automatically at runtime by environment
+
+      async fetchWithRetry(url, options, maxRetries = 2) {
+        let delay = 1000;
+        for (let attempt = 0; attempt <= maxRetries; attempt++) {
+          try {
+            const res = await fetch(url, options);
+            if (res.status === 429 && attempt < maxRetries) {
+              await new Promise(r => setTimeout(r, delay));
+              delay *= 2;
+              continue;
+            }
+            return res;
+          } catch (err) {
+            if (attempt === maxRetries) throw err;
+            await new Promise(r => setTimeout(r, delay));
+            delay *= 2;
+          }
+        }
+      },
+
+      async generateText({ prompt, systemInstruction, enableSearch = false }) {
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${this.apiKey}`;
+        const payload = {
+          contents: [{ parts: [{ text: prompt }] }]
+        };
+        if (enableSearch) {
+          payload.tools = [{ google_search: {} }];
+        }
+        if (systemInstruction) {
+          payload.systemInstruction = { parts: [{ text: systemInstruction }] };
+        }
+        const res = await this.fetchWithRetry(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        const candidate = data.candidates?.[0];
+        const text = candidate?.content?.parts?.[0]?.text || "Nessun output generato.";
+        let sources = [];
+        if (candidate?.groundingMetadata?.groundingAttributions) {
+          sources = candidate.groundingMetadata.groundingAttributions
+            .map(a => ({ uri: a.web?.uri, title: a.web?.title || a.web?.uri }))
+            .filter(s => s.uri && s.title);
+        }
+        return { text, sources };
+      },
+
+      async analyzePhoto({ prompt, base64Image, systemInstruction }) {
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${this.apiKey}`;
+        const cleanBase64 = base64Image.replace(/^data:image\/[a-zA-Z]+;base64,/, '');
+        const payload = {
+          contents: [{
+            parts: [
+              { text: prompt },
+              { inlineData: { mimeType: "image/jpeg", data: cleanBase64 } }
+            ]
+          }]
+        };
+        if (systemInstruction) {
+          payload.systemInstruction = { parts: [{ text: systemInstruction }] };
+        }
+        const res = await this.fetchWithRetry(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        return data.candidates?.[0]?.content?.parts?.[0]?.text || "Impossibile analizzare l'immagine.";
+      }
+    };
+
+    const PREZZIARIO_PUGLIA_2026 = [
+      { codice: "PU-26.SIC.01", cat: "Sicurezza", tip: "Sicurezza", desc: "Pannelli di protezione androni e ascensore condominiale in polionda alveolare sp. 3 mm fissati con nastro non tracciante.", um: "mq", pu: 4.80, mo: 70 },
+      { codice: "PU-26.SIC.02", cat: "Sicurezza", tip: "Sicurezza", desc: "Trabattello mobile su ruote a norma UNI EN 1004 per interni fino a 3.50 m, botolato e con fermapiedi.", um: "mese", pu: 240.00, mo: 40 },
+      { codice: "PU-26.SIC.03", cat: "Sicurezza", tip: "Sicurezza", desc: "Quadro elettrico di cantiere tipo ASC a norma CEI 64-8/7 con differenziale ad alta sensibilità 30mA e prese IP67.", um: "mese", pu: 85.00, mo: 25 },
+      { codice: "PU-26.SIC.04", cat: "Sicurezza", tip: "Sicurezza", desc: "Condotto scaricadotriti in PE con tramoggia di carico e ralla di convogliamento su cassone scarrabile autorizzato.", um: "sett", pu: 110.00, mo: 50 },
+      { codice: "PU-26.DEM.01", cat: "Opere Edili", tip: "Demolizioni", desc: "Demolizione di tramezzature interne in tufo pugliese o laterizio forato spessore fino a 15 cm con calo controllato.", um: "mq", pu: 19.50, mo: 82 },
+      { codice: "PU-26.DEM.02", cat: "Opere Edili", tip: "Demolizioni", desc: "Demolizione di massetti cementizi o alleggeriti di spessore fino a 10 cm con martello leggero anti-sfondellamento.", um: "mq", pu: 14.80, mo: 80 },
+      { codice: "PU-26.DEM.03", cat: "Opere Edili", tip: "Demolizioni", desc: "Rimozione pavimenti in gres, ceramica o graniglia compreso letto di malta o collante fino al solaio strutturale.", um: "mq", pu: 11.20, mo: 78 },
+      { codice: "PU-26.DEM.08", cat: "Opere Edili", tip: "Demolizioni", desc: "Trasporto a discarica autorizzata macerie inerti pulite (CER 170904), compreso carico, oneri discarica e formulario FIR.", um: "mc", pu: 42.00, mo: 35 },
+      { codice: "PU-26.MUR.01", cat: "Opere Murarie", tip: "Murature", desc: "Tramezzatura interna in blocchi di calcestruzzo aerato autoclavato (Gasbeton / Ytong) spessore 10 cm con collante.", um: "mq", pu: 41.50, mo: 55 },
+      { codice: "PU-26.MUR.03", cat: "Opere Murarie", tip: "Murature", desc: "Controtelaio metallico a scomparsa per porta scorrevole tipo Scrigno/Eclisse per parete intonaco o cartongesso.", um: "cad", pu: 220.00, mo: 40 },
+      { codice: "PU-26.MUR.04", cat: "Opere Murarie", tip: "Intonaci", desc: "Intonaco premiscelato di fondo calce-cemento tirato a staggia per interni, spessore medio 15 mm.", um: "mq", pu: 18.20, mo: 65 },
+      { codice: "PU-26.MUR.05", cat: "Opere Murarie", tip: "Intonaci", desc: "Intonaco deumidificante macroporoso a base di calce idraulica naturale NHL 3.5 per murature in tufo contro risalita capillare.", um: "mq", pu: 38.00, mo: 60 },
+      { codice: "PU-26.MUR.06", cat: "Opere Murarie", tip: "Rasature", desc: "Rasatura civile a specchio per interni eseguita con rasante a base gesso/anidrite in due passate.", um: "mq", pu: 11.50, mo: 70 },
+      { codice: "PU-26.CTG.01", cat: "Cartongessi", tip: "Cartongesso", desc: "Tramezzo cartongesso doppia lastra sp. 12.5 mm con orditura 75 mm e lana minerale fonoisolante (Rw ≥ 52 dB).", um: "mq", pu: 52.00, mo: 50 },
+      { codice: "PU-26.CTG.03", cat: "Cartongessi", tip: "Cartongesso", desc: "Controsoffitto ribassato continuo in cartongesso su orditura metallica pendinata fonoassorbente con stuccatura Q2/Q3.", um: "mq", pu: 44.00, mo: 55 },
+      { codice: "PU-26.CTG.04", cat: "Cartongessi", tip: "Cartongesso", desc: "Veletta ribassata d'arredo per gola luce LED a scomparsa, con profilo estruso in alluminio dissipatore.", um: "ml", pu: 38.00, mo: 65 },
+      { codice: "PU-26.MAS.01", cat: "Massetti", tip: "Massetti", desc: "Massetto alleggerito perlite o polistirolo per compensazione e passaggio impianti, spessore medio 8-10 cm.", um: "mq", pu: 17.50, mo: 45 },
+      { codice: "PU-26.MAS.02", cat: "Massetti", tip: "Isolamento", desc: "Tappetino resiliente anticalpestio continuo in PE reticolato 8 mm con risvolti perimetrali anti-ponte acustico.", um: "mq", pu: 7.80, mo: 40 },
+      { codice: "PU-26.MAS.03", cat: "Massetti", tip: "Massetti", desc: "Massetto autolivellante ad altissima conducibilità termica (λ ≥ 1.8 W/mK) per impianto radiante a pavimento a basso spessore.", um: "mq", pu: 26.50, mo: 40 },
+      { codice: "PU-26.MAS.04", cat: "Massetti", tip: "Impermeabilizzazione", desc: "Impermeabilizzazione elastica bicomponente per piatti doccia e bagni con rete in fibra e bandelle coprigiunto.", um: "mq", pu: 23.00, mo: 60 },
+      { codice: "PU-26.PAV.01", cat: "Pavimentazioni", tip: "Pavimenti", desc: "Pavimento in gres porcellanato 60x120 prima scelta rettificato posato con colla C2TE S1 a doppia spalmatura e cunei livellanti.", um: "mq", pu: 68.00, mo: 45 },
+      { codice: "PU-26.PAV.05", cat: "Pavimentazioni", tip: "Battiscopa", desc: "Battiscopa filomuro da incasso con profilo d'alluminio estruso raso parete privo di aggetti.", um: "ml", pu: 34.00, mo: 65 },
+      { codice: "PU-26.INF.03", cat: "Infissi", tip: "Serramenti", desc: "Serramento PVC 6 camere triplo vetro basso-emissivo selettivo con gas Argon, Uw ≤ 1.0 W/m²K ex D.I. 26/06/2015.", um: "mq", pu: 390.00, mo: 25 },
+      { codice: "PU-26.INF.04", cat: "Infissi", tip: "Porte", desc: "Porta filomuro rasoparete reversibile da tinteggiare a scomparsa totale con telaio e cerniere registrabili 3D.", um: "cad", pu: 520.00, mo: 25 },
+      { codice: "PU-26.IDR.01", cat: "Impianti", tip: "Impianto Idrico", desc: "Rifacimento impianto idrico a collettore complanare in tubazione multistrato coibentata e scarichi insonorizzati per 2 bagni.", um: "corpo", pu: 2900.00, mo: 55 },
+      { codice: "PU-26.IDR.02", cat: "Impianti", tip: "Sanitari", desc: "Cassetta incasso Geberit Sigma 8 a doppio comando con telaio zincato per vasi sospesi.", um: "cad", pu: 240.00, mo: 40 },
+      { codice: "PU-26.TER.01", cat: "Impianti", tip: "Impianto Termico", desc: "Impianto radiante a pavimento con pannello bugnato termoisolante in EPS e tubazione multistrato PE-RT 17x2.", um: "mq", pu: 65.00, mo: 45 },
+      { codice: "PU-26.TER.02", cat: "Impianti", tip: "Impianto Termico", desc: "Pompa di calore monoblocco reversibile aria-acqua 8 kW inverter classe A+++ per riscaldamento, raffrescamento ed ACS integrata.", um: "corpo", pu: 6800.00, mo: 25 },
+      { codice: "PU-26.TER.03", cat: "Impianti", tip: "Impianto Termico", desc: "Unità VMC puntuale decentralizzata con scambiatore ceramico entalpico ad alto recupero (η ≥ 90%) e filtrazione F7.", um: "cad", pu: 520.00, mo: 35 },
+      { codice: "PU-26.ELE.01", cat: "Impianti", tip: "Impianto Elettrico", desc: "Punto presa 10/16A o Schuko con tubazione antifiamma e cavi CPR non propaganti l'incendio FS18 a norma D.M. 37/08.", um: "punto", pu: 38.00, mo: 65 },
+      { codice: "PU-26.ELE.03", cat: "Impianti", tip: "Impianto Elettrico", desc: "Centralino generale da incasso a 36 moduli DIN sezionato con interruttori magnetotermici differenziali in Classe A e scaricatore SPD.", um: "corpo", pu: 680.00, mo: 50 },
+      { codice: "PU-26.ELE.04", cat: "Impianti", tip: "Illuminazione", desc: "Faretto LED trimless incasso a scomparsa totale in gesso rasabile con ottica antiriflesso (UGR ≤ 19) dimmerabile.", um: "cad", pu: 58.00, mo: 45 },
+      { codice: "PU-26.TIN.01", cat: "Finiture", tip: "Pitturazioni", desc: "Tinteggiatura interna per pareti e soffitti con idropittura traspirante superlavabile a 2 mani previa mano di fissativo acrilico.", um: "mq", pu: 9.80, mo: 75 }
+    ];
+
+    const INITIAL_CANTIERI = [
+      {
+        id: "cant-fg-01",
+        codice: "CANT-2026-048",
+        titolo: "Ristrutturazione Edilizia Integrale & Efficientamento Energetico — Residenza Nembrotte/Salvemini",
+        tipologia: "Manutenzione Straordinaria (Art. 3, c. 1, lett. b, D.P.R. 380/01 e s.m.i.)",
+        titoloEdilizio: "C.I.L.A. Asseverata prot. n. 2026/014820/SUE Foggia",
+        dataInizio: "2026-03-01",
+        dataFinePrevista: "2026-08-15",
+        committente: {
+          nome: "Dott. Gianluca Nembrotte & Avv. Chiara Salvemini",
+          codiceFiscale: "NMBGLC80A15D643K",
+          telefono: "+39 0881 724911",
+          email: "nembrotte.salvemini@gmail.com"
+        },
+        ubicazione: {
+          indirizzo: "Corso Roma n. 88, Scala A, Piano 3°, Int. 6",
+          citta: "Foggia (FG)",
+          cap: "71121",
+          superficieMq: 125.0,
+          datiCatastali: "N.C.E.U. Comune di Foggia, Foglio 108, P.lla 442, Sub. 16, Cat. A/2, Cl. 4, Vani 6.5"
+        },
+        importoContrattoLavori: 84275.20,
+        oneriSicurezzaPSC: 3394.00,
+        impresaAffidataria: "Capitanata Restauri & Costruzioni S.r.l. (Foggia)",
+        architettoDL: "Arch. Romolo S. de Seneen (Ordine Architetti PPC Foggia n. 650)",
+        cse: "Arch. Romolo S. de Seneen (Abil. Sicurezza D.Lgs. 81/08)",
+        
+        // Vani Laser e Rapporti Aeroilluminanti
+        rilievo: {
+          vani: [
+            { id: "v1", nome: "Zona Living & Sala da Pranzo", lun: 7.20, lar: 4.80, alt: 2.95, sup: 34.56, vol: 101.95, rai: 0.165, raiConforme: true, note: "Pareti d'ambito in blocchi di tufo pugliese 40 cm. Doppia portafinestra verso Corso Roma." },
+            { id: "v2", nome: "Cucina Abitabile con Isola", lun: 4.20, lar: 3.60, alt: 2.95, sup: 15.12, vol: 44.60, rai: 0.145, raiConforme: true, note: "Previsto scarico a pavimento e canalizzazione fumi a soffitto." },
+            { id: "v3", nome: "Camera Matrimoniale Padronale", lun: 4.50, lar: 3.80, alt: 2.95, sup: 17.10, vol: 50.45, rai: 0.142, raiConforme: true, note: "Solaio Bausta 18+6 cm parallelo alla facciata principale." },
+            { id: "v4", nome: "Camera Singola / Studio", lun: 3.80, lar: 3.20, alt: 2.95, sup: 12.16, vol: 35.87, rai: 0.138, raiConforme: true, note: "Finestra con affaccio sulla corte interna." },
+            { id: "v5", nome: "Bagno Padronale Finestrato", lun: 3.20, lar: 2.10, alt: 2.70, sup: 6.72, vol: 18.14, rai: 0.148, raiConforme: true, note: "Doccia walk-in filo pavimento e sanitari sospesi." },
+            { id: "v6", nome: "Bagno Secondario / Lavanderia", lun: 2.40, lar: 1.80, alt: 2.70, sup: 4.32, vol: 11.66, rai: 0.00, raiConforme: false, note: "Vano cieco con condotto di estrazione forzata continua UNI 10339 (100 m³/h)." },
+            { id: "v7", nome: "Disimpegno Notte & Armadiatura", lun: 4.10, lar: 1.30, alt: 2.70, sup: 5.33, vol: 14.39, rai: 0.00, raiConforme: true, note: "Controsoffitto tecnico per alloggiamento unità canalizzata." }
+          ]
+        },
+
+        // Diagnostica Preesistente Editabile
+        diagnostica: [
+          {
+            id: "diag-1",
+            categoria: "Strutture & Solai",
+            titolo: "Verifica Solai Laterocemento & Anti-Sfondellamento Pignatte",
+            gravita: "Media",
+            rilievo: "Solaio in laterocemento sp. 18+6 cm gettato in opera (anno 1974). La prova di percussione meccanica effettuata il 05/02/2026 ha riscontrato locali distacchi corticali dell'intonaco sui fondelli delle pignatte nella zona cucina.",
+            prescrizione: "Demolizione programmata dell'intonaco ammalorato, trattamento passivante ferri con malta reoplastica R4 e placcaggio con rete in fibra di vetro antisfondellamento certificata."
+          },
+          {
+            id: "diag-2",
+            categoria: "Murature & Umidità",
+            titolo: "Umidità di Risalita e Degrado Intonaci Pareti in Tufo Pugliese",
+            gravita: "Alta",
+            rilievo: "Presenza di efflorescenze saline ed esfoliazione dell'intonaco sui primi 60 cm dal calpestio lungo la muratura portante a Nord-Ovest, causata da risalita capillare storica.",
+            prescrizione: "Scrostamento totale dell'intonaco fino a 1.20 m da quota pavimento, lavaggio desalinizante e applicazione di intonaco macroporoso deumidificante traspirante a base calce idraulica NHL 3.5."
+          },
+          {
+            id: "diag-3",
+            categoria: "Termografia & Ponti Termici",
+            titolo: "Audit Termografico FLIR E6-XT Ponti Termici Pilastri",
+            gravita: "Media",
+            rilievo: "Ispezione termografica del 08/02/2026: individuato forte ponte termico (temperatura superficiale interna T = 12.1°C con esterna 4°C) sul pilastro d'angolo e sui cassonetti degli avvolgibili preesistenti.",
+            prescrizione: "Isolamento a cappotto interno con controparete in lastre accoppiate e lana minerale ad alta densità (λ = 0.035 W/mK) con barriera al vapore e cassonetti monoblocco coibentati."
+          },
+          {
+            id: "diag-4",
+            categoria: "Impianti di Scarico",
+            titolo: "Videoispezione Colonna di Scarico Condominiale in Ghisa",
+            gravita: "Bassa",
+            rilievo: "La braga della colonna condominiale (DN 110 mm) risulta strutturalmente integra ma presenta incrostazioni ferrose all'innesto. Pendenze dei nuovi raccordi certificate ≥ 2%.",
+            prescrizione: "Inserimento di raccordo speciale a tenuta elastica Phonoblack e guarnizioni NBR a norma UNI EN 1451."
+          }
+        ],
+
+        // Tavole di Progetto Esecutive
+        disegni: [
+          { id: "tav-01", codice: "TAV-ARCH-01", ambito: "Architettonico", titolo: "Stato di Fatto: Pianta Quotata, Prospetti e Sezioni A-A' / B-B'", scala: "1:50", rev: "Rev. 01", file: "TAV-ARCH-01_StatoDiFatto.pdf", data: "2026-02-10" },
+          { id: "tav-02", codice: "TAV-ARCH-02", ambito: "Architettonico", titolo: "Comparativa Demolizioni (Gialli) e Ricostruzioni (Rossi)", scala: "1:50", rev: "Rev. 02", file: "TAV-ARCH-02_Gialli_Rossi.pdf", data: "2026-02-14" },
+          { id: "tav-03", codice: "TAV-ARCH-03", ambito: "Architettonico", titolo: "Progetto Post-Operam: Layout Arredi, Vani e Quote Esecutive", scala: "1:50", rev: "Rev. 03", file: "TAV-ARCH-03_Progetto_Esecutivo.pdf", data: "2026-02-18" },
+          { id: "tav-04", codice: "TAV-IMP-01", ambito: "Impiantistico", titolo: "Impianto Idrico Sanitario e Scarichi Insonorizzati a Collettore", scala: "1:50", rev: "Rev. 01", file: "TAV-IMP-01_Idrico_Sanitario.pdf", data: "2026-02-20" },
+          { id: "tav-05", codice: "TAV-IMP-02", ambito: "Impiantistico", titolo: "Impianto Radiante a Pavimento, Pompa di Calore A+++ e VMC", scala: "1:50", rev: "Rev. 01", file: "TAV-IMP-02_Termoidraulico_PDC.pdf", data: "2026-02-20" },
+          { id: "tav-06", codice: "TAV-IMP-03", ambito: "Impiantistico", titolo: "Impianto Elettrico, Centralino 36 DIN, Linea Induzione e Lighting LED", scala: "1:50", rev: "Rev. 01", file: "TAV-IMP-03_Elettrico_Lighting.pdf", data: "2026-02-22" },
+          { id: "tav-07", codice: "TAV-SIC-01", ambito: "Sicurezza PSC", titolo: "Planimetria Lay-out Sicurezza PSC: Presidi, Vie di Fuga e Protezioni", scala: "1:100", rev: "Rev. 01", file: "TAV-SIC-01_Layout_Sicurezza.pdf", data: "2026-02-24" }
+        ],
+
+        // Voci di Computo Attive e SAL
+        computo: [
+          { id: "cp-1", codice: "PU-26.SIC.01", desc: "Pannelli protezione androne, scale e ascensore polionda 3 mm", um: "mq", qta: 55, pu: 4.80, sal: 100 },
+          { id: "cp-2", codice: "PU-26.SIC.02", desc: "Noleggio trabattello mobile a norma UNI EN 1004 (5 mesi)", um: "mese", qta: 5, pu: 240.00, sal: 80 },
+          { id: "cp-3", codice: "PU-26.SIC.03", desc: "Quadro elettrico cantiere ASC differenziale 30mA prese IP67", um: "mese", qta: 5, pu: 85.00, sal: 80 },
+          { id: "cp-4", codice: "PU-26.SIC.04", desc: "Condotto scaricadotriti convogliamento macerie su cassone", um: "sett", qta: 4, pu: 110.00, sal: 100 },
+          { id: "cp-5", codice: "PU-26.DEM.01", desc: "Demolizione tramezzature interne tufo pugliese o laterizio sp. 15 cm", um: "mq", qta: 72, pu: 19.50, sal: 100 },
+          { id: "cp-6", codice: "PU-26.DEM.02", desc: "Demolizione massetto cementizio esistente con martello leggero", um: "mq", qta: 120, pu: 14.80, sal: 100 },
+          { id: "cp-7", codice: "PU-26.DEM.03", desc: "Rimozione pavimento esistente gres/graniglia compreso letto malta", um: "mq", qta: 120, pu: 11.20, sal: 100 },
+          { id: "cp-8", codice: "PU-26.DEM.08", desc: "Trasporto a discarica autorizzata macerie inerti CER 170904 con FIR", um: "mc", qta: 38, pu: 42.00, sal: 100 },
+          { id: "cp-9", codice: "PU-26.MUR.01", desc: "Tramezzo interno Gasbeton / Ytong sp. 10 cm con colla cementizia", um: "mq", qta: 58, pu: 41.50, sal: 85 },
+          { id: "cp-10", codice: "PU-26.MUR.03", desc: "Controtelaio metallico a scomparsa tipo Scrigno/Eclisse", um: "cad", qta: 3, pu: 220.00, sal: 100 },
+          { id: "cp-11", codice: "PU-26.MUR.04", desc: "Intonaco premiscelato di fondo calce-cemento tirato a staggia", um: "mq", qta: 116, pu: 18.20, sal: 75 },
+          { id: "cp-12", codice: "PU-26.CTG.03", desc: "Controsoffitto ribassato continuo in cartongesso orditura pendinata", um: "mq", qta: 65, pu: 44.00, sal: 60 },
+          { id: "cp-13", codice: "PU-26.CTG.04", desc: "Veletta ribassata d'arredo per gola luce LED con profilo estruso", um: "ml", qta: 22, pu: 38.00, sal: 50 },
+          { id: "cp-14", codice: "PU-26.MAS.01", desc: "Massetto alleggerito perlite per livellamento impianti sp. 8-10 cm", um: "mq", qta: 120, pu: 17.50, sal: 100 },
+          { id: "cp-15", codice: "PU-26.MAS.02", desc: "Tappetino resiliente anticalpestio continuo in PE reticolato 8 mm", um: "mq", qta: 120, pu: 7.80, sal: 100 },
+          { id: "cp-16", codice: "PU-26.MAS.03", desc: "Massetto autolivellante ad altissima conducibilità per radiante", um: "mq", qta: 120, pu: 26.50, sal: 100 },
+          { id: "cp-17", codice: "PU-26.IDR.01", desc: "Impianto idrico a collettore complanare per 2 bagni in multistrato", um: "corpo", qta: 1, pu: 2900.00, sal: 80 },
+          { id: "cp-18", codice: "PU-26.TER.01", desc: "Impianto radiante a pavimento a bassa temperatura pannello bugnato", um: "mq", qta: 120, pu: 65.00, sal: 90 },
+          { id: "cp-19", codice: "PU-26.TER.02", desc: "Pompa di calore monoblocco reversibile aria-acqua 8 kW inverter A+++", um: "corpo", qta: 1, pu: 6800.00, sal: 40 },
+          { id: "cp-20", codice: "PU-26.ELE.03", desc: "Centralino generale da incasso 36 moduli sezionato D.M. 37/08", um: "corpo", qta: 1, pu: 680.00, sal: 70 },
+          { id: "cp-21", codice: "PU-26.PAV.01", desc: "Fornitura e posa pavimento gres porcellanato 60x120 prima scelta", um: "mq", qta: 120, pu: 68.00, sal: 30 }
+        ],
+
+        // Certificati di Pagamento (CdP) Erogati
+        certificatiPagamento: [
+          { id: "cdp-1", numero: 1, data: "2026-04-10", importoLavoriNetto: 21917.30, quotaSicurezzaPSC: 848.50, ritenutaGaranzia: 109.58, iva10: 2265.62, totaleCertificato: 24921.84, stato: "Liquidato", note: "Raggiungimento SAL 1 (Demolizioni e Tramezzature Gasbeton completate)." },
+          { id: "cdp-2", numero: 2, data: "2026-05-25", importoLavoriNetto: 26300.76, quotaSicurezzaPSC: 1018.20, ritenutaGaranzia: 131.50, iva10: 2718.75, totaleCertificato: 29906.21, stato: "In Emissione", note: "Raggiungimento SAL 2 (Impianti sottotraccia, collaudo 6 bar e getto massetto autolivellante)." }
+        ],
+
+        // Varianti in Corso d'Opera
+        varianti: [
+          {
+            id: "var-1",
+            protocollo: "VAR-2026-01",
+            data: "2026-03-25",
+            titolo: "Aggiunta Gola Luce LED nel Living e Doppia Presa Isola Cottura",
+            inquadramento: "Variante non essenziale CILA (Art. 22 D.P.R. 380/01)",
+            motivazione: "Richiesta formale committente per esaltare l'illuminazione d'accento sull'isola e ottimizzazione prese.",
+            deltaImporto: 1850.00,
+            prorogaGiorni: 5,
+            foto: "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=600&auto=format&fit=crop&q=80",
+            statoCliente: "Approvata dalla D.L. & Committente",
+            noteDL: "Opere compatibili con la statica del solaio. Nessun aggravio sul carico incendi."
+          }
+        ],
+
+        // Giornale dei Lavori
+        giornale: [
+          {
+            id: "gl-1",
+            data: "2026-03-24",
+            meteo: "Sereno, 18°C",
+            operai: 5,
+            imprese: "Capitanata Restauri S.r.l. (3), Termoidraulica Dauna (2)",
+            attivita: "Completata posa dei tramezzi in Gasbeton tra cucina e disimpegno. Tracciamento tracce per collettore idrico.",
+            ordiniDL: "Verificare accuratamente la quota millimetrica dello scarico cucina ad isola prima del getto di livellamento."
+          },
+          {
+            id: "gl-2",
+            data: "2026-03-28",
+            meteo: "Nuvoloso, 16°C",
+            operai: 4,
+            imprese: "Capitanata Restauri S.r.l. (2), ElettroProget (2)",
+            attivita: "Posa tubazioni corrugate antifiamma per centralino e predisposizione faretti trimless a controsoffitto.",
+            ordiniDL: "Mantenere pulito e spazzato l'androne condominiale a fine giornata come prescritto dal PSC."
+          }
+        ],
+
+        // Sicurezza Cantiere (Titolo IV D.Lgs. 81/08)
+        sicurezza: {
+          uominiGiorno: 168,
+          costiNonRibassabili: 3394.00,
+          notificaSpesalProt: "ASL-FG/SPESAL/2026/049182",
+          organiVigilanza: "SPESAL ASL Foggia (Via Protano) • ITL Foggia (Via Telesforo) • SUE Comune di Foggia",
+          impresePOS: [
+            { id: "imp-1", ragioneSociale: "Capitanata Restauri & Costruzioni S.r.l.", piva: "03418290715", ruolo: "Impresa Affidataria Opere Edili", datoreLavoro: "Giuseppe Carducci", durcScadenza: "2026-08-30", durcValido: true, posValidato: true, dataValidazione: "2026-02-26" },
+            { id: "imp-2", ragioneSociale: "Termoidraulica Dauna di Greco M.", piva: "03891420718", ruolo: "Subappaltatore Termoidraulico", datoreLavoro: "Michele Greco", durcScadenza: "2026-09-15", durcValido: true, posValidato: true, dataValidazione: "2026-02-27" },
+            { id: "imp-3", ragioneSociale: "ElettroProget Impianti S.n.c.", piva: "04128490712", ruolo: "Subappaltatore Impianti Elettrici", datoreLavoro: "Antonio Leone", durcScadenza: "2026-10-10", durcValido: true, posValidato: true, dataValidazione: "2026-02-28" }
+          ]
+        }
+      }
+    ];
+
+    function App() {
+      const [cantieri, setCantieri] = useState(() => {
+        const saved = SafeStorage.getItem('desark_cantieri_v4');
+        return saved ? JSON.parse(saved) : INITIAL_CANTIERI;
+      });
+
+      const [selectedCantiereId, setSelectedCantiereId] = useState(() => {
+        return cantieri[0]?.id || INITIAL_CANTIERI[0].id;
+      });
+
+      // Role & Navigation
+      const [userRole, setUserRole] = useState('studio'); // 'studio' | 'committente'
+      const [activeWorkspace, setActiveWorkspace] = useState('avvio'); 
+      // Workspaces: 'avvio' | 'rilievo' | 'disegni' | 'offerta' | 'computo' | 'sicurezza' | 'varianti' | 'giornale' | 'modelli' | 'dashboard'
+
+      // Toast Notifications
+      const [toastMessage, setToastMessage] = useState(null);
+      const showToast = (msg) => {
+        setToastMessage(msg);
+        setTimeout(() => setToastMessage(null), 3500);
+      };
+
+      // Active Site helper
+      const currentCantiere = useMemo(() => {
+        return cantieri.find(c => c.id === selectedCantiereId) || cantieri[0];
+      }, [cantieri, selectedCantiereId]);
+
+      // Save state
+      useEffect(() => {
+        SafeStorage.setItem('desark_cantieri_v4', JSON.stringify(cantieri));
+      }, [cantieri]);
+
+      // Financial and Schedule Metrics
+      const cantiereMetrics = useMemo(() => {
+        const computo = currentCantiere.computo || [];
+        const totaleComputo = computo.reduce((acc, v) => acc + (Number(v.qta) * Number(v.pu)), 0);
+        const maturatoSAL = computo.reduce((acc, v) => acc + (Number(v.qta) * Number(v.pu) * (Number(v.sal) || 0) / 100), 0);
+        const salPerc = totaleComputo > 0 ? Math.round((maturatoSAL / totaleComputo) * 100) : 0;
+        const deltaVarianti = (currentCantiere.varianti || []).reduce((acc, v) => acc + (Number(v.deltaImporto) || 0), 0);
+        const contrattoTot = (Number(currentCantiere.importoContrattoLavori) || 0) + deltaVarianti;
+        const prorogheGiorni = (currentCantiere.varianti || []).reduce((acc, v) => acc + (Number(v.prorogaGiorni) || 0), 0);
+        
+        return {
+          totaleComputo,
+          maturatoSAL,
+          salPerc,
+          deltaVarianti,
+          contrattoTot,
+          prorogheGiorni
+        };
+      }, [currentCantiere]);
+
+      // Modal States
+      const [isNewCantiereModalOpen, setIsNewCantiereModalOpen] = useState(false);
+      const [isDeleteCantiereModalOpen, setIsDeleteCantiereModalOpen] = useState(false);
+      const [isNewVanoModalOpen, setIsNewVanoModalOpen] = useState(false);
+      const [isEditDiagnosisModalOpen, setIsEditDiagnosisModalOpen] = useState(false);
+      const [editingDiagnosis, setEditingDiagnosis] = useState(null);
+      const [isNewTavolaModalOpen, setIsNewTavolaModalOpen] = useState(false);
+      const [isNewPrezzoModalOpen, setIsNewPrezzoModalOpen] = useState(false);
+      const [isNewCdPModalOpen, setIsNewCdPModalOpen] = useState(false);
+      const [isNewVarianteModalOpen, setIsNewVarianteModalOpen] = useState(false);
+      const [isNewGiornaleModalOpen, setIsNewGiornaleModalOpen] = useState(false);
+      const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
+      const [isCadFullscreen, setIsCadFullscreen] = useState(false);
+      const [cadActiveLayer, setCadActiveLayer] = useState('tutti'); // 'tutti' | 'quote' | 'gialli_rossi' | 'impianti' | 'arredi'
+
+      // Gemini AI State
+      const [isAiModalOpen, setIsAiModalOpen] = useState(false);
+      const [aiActiveTab, setAiActiveTab] = useState('copilot'); // 'copilot' | 'audit_computo' | 'vision_variante' | 'rischi_psc'
+      const [aiPrompt, setAiPrompt] = useState('');
+      const [aiResultText, setAiResultText] = useState('');
+      const [aiSources, setAiSources] = useState([]);
+      const [aiLoading, setAiLoading] = useState(false);
+      const [aiSearchEnabled, setAiSearchEnabled] = useState(true);
+      const [aiInspectionImage, setAiInspectionImage] = useState(null);
+
+      // Forms
+      const [newCantiereForm, setNewCantiereForm] = useState({
+        titolo: '',
+        tipologia: 'Manutenzione Straordinaria (Art. 3, c. 1, lett. b, D.P.R. 380/01)',
+        titoloEdilizio: 'C.I.L.A. Asseverata prot. n. SUE Foggia',
+        committenteNome: '',
+        committenteCF: '',
+        committenteTel: '',
+        committenteEmail: '',
+        indirizzo: 'Foggia (FG)',
+        superficieMq: 110,
+        datiCatastali: 'Fg. 108, P.lla 440, Sub. 10',
+        importoContrattoLavori: 65000,
+        oneriSicurezzaPSC: 3000,
+        dataInizio: new Date().toISOString().split('T')[0],
+        dataFinePrevista: '2026-09-30',
+        impresaAffidataria: 'Capitanata Restauri S.r.l.'
+      });
+
+      const [newVanoForm, setNewVanoForm] = useState({ nome: '', lun: 4.20, lar: 3.50, alt: 2.95, raiFinestraMq: 2.0, note: '' });
+      const [newTavolaForm, setNewTavolaForm] = useState({ codice: 'TAV-ARCH-04', ambito: 'Architettonico', titolo: '', scala: '1:50', rev: 'Rev. 01', file: 'Progetto.pdf' });
+      const [newPrezzoForm, setNewPrezzoForm] = useState({ codice: 'NP-26.01', desc: '', um: 'mq', pu: 0, qta: 1, sal: 0 });
+      const [newVarianteForm, setNewVarianteForm] = useState({ titolo: '', inquadramento: 'Variante non essenziale CILA (Art. 22 D.P.R. 380/01)', motivazione: '', deltaImporto: 1200, prorogaGiorni: 4, foto: null });
+      const [newGiornaleForm, setNewGiornaleForm] = useState({ data: new Date().toISOString().split('T')[0], meteo: 'Sereno, 20°C', operai: 4, imprese: 'Capitanata Restauri S.r.l.', attivita: '', ordiniDL: '' });
+      const [newCdPForm, setNewCdPForm] = useState({ numero: 3, importoLavoriNetto: 15000, quotaSicurezzaPSC: 600, note: 'Raggiungimento milestone posa pavimentazioni e serramenti.' });
+
+      // Practice work-type classification tool state
+      const [workTypeSelection, setWorkTypeSelection] = useState({
+        tramezziGasbeton: true,
+        impiantiTecnologici: true,
+        operePortantiCerchiature: false,
+        modificheProspetto: false,
+        volumetriaSagoma: false,
+        finitureOrdinarie: true
+      });
+
+      // AirDrop JSON Sync Handlers
+      const fileInputRef = useRef(null);
+      const handleExportAirDrop = () => {
+        const payload = JSON.stringify(cantieri, null, 2);
+        const blob = new Blob([payload], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `DesArk_Fascicolo_${currentCantiere.codice}_Foggia.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        showToast('Fascicolo esportato! Pronto per AirDrop su iPhone o Mac.');
+      };
+
+      const handleImportAirDrop = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          try {
+            const parsed = JSON.parse(evt.target.result);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              setCantieri(parsed);
+              setSelectedCantiereId(parsed[0].id);
+              showToast('Fascicolo sincronizzato con successo!');
+            }
+          } catch (err) {
+            showToast('Errore durante la lettura del file di backup.');
+          }
+        };
+        reader.readAsText(file);
+        e.target.value = '';
+      };
+
+      // Native Copy helper
+      const handleCopyText = (text, feedbackMsg = 'Copiato negli appunti!') => {
+        if (navigator.clipboard?.writeText) {
+          navigator.clipboard.writeText(text).then(() => showToast(feedbackMsg));
+        } else {
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+          showToast(feedbackMsg);
+        }
+      };
+
+      const handleAskGeminiCopilot = async (customPrompt = null) => {
+        const query = customPrompt || aiPrompt;
+        if (!query.trim()) return;
+        setAiLoading(true);
+        setAiResultText('');
+        setAiSources([]);
+        const systemInstruction = `Sei l'Assistente Tecnico-Giuridico AI di Des'Ark Studio dell'Arch. Romolo S. de Seneen (Ordine Architetti PPC Prov. Foggia n. 650).
+Fornisci consulenze rigorose basate su normativa edilizia italiana (D.P.R. 380/01 e s.m.i., Legge Salva Casa n. 105/2024 art. 34-bis per tolleranze, D.M. 05/07/1975 per R.A.I., D.Lgs. 81/08 Titolo IV sicurezza cantieri, e Prezziario Regionale Puglia 2026).
+Cantiere attivo: ${currentCantiere.codice} a Foggia (${currentCantiere.ubicazione.indirizzo}, superficie ${currentCantiere.ubicazione.superficieMq} mq, titolo ${currentCantiere.titoloEdilizio}).`;
+        
+        try {
+          const { text, sources } = await GeminiService.generateText({
+            prompt: query,
+            systemInstruction,
+            enableSearch: aiSearchEnabled
+          });
+          setAiResultText(text);
+          setAiSources(sources);
+        } catch (err) {
+          setAiResultText(`Errore: ${err.message}. Riprova tra pochi istanti.`);
+        } finally {
+          setAiLoading(false);
+        }
+      };
+
+      const handleAiInspectPhoto = async (imageDataUrl) => {
+        if (!imageDataUrl) return;
+        setAiLoading(true);
+        setAiResultText('');
+        setAiSources([]);
+        setAiInspectionImage(imageDataUrl);
+        setAiActiveTab('vision_variante');
+        setIsAiModalOpen(true);
+        const prompt = `Analizza questa fotografia scattata nel cantiere residenziale di Foggia (Arch. Romolo S. de Seneen).
+Identifica:
+1. Materiali e manufatti visibili (tufo pugliese, tramezzi Gasbeton, solai laterocemento, tracce impiantistiche, massetti).
+2. Eventuali patologie edilizie o anomalie esecutive (umidità ascendente, fessurazioni, disassamenti).
+3. Se richiesta di variante: valuta fattibilità tecnica, stima un delta di spesa approssimativo in Euro secondo il Prezziario Puglia 2026 e suggerisci giorni di proroga cronoprogramma.`;
+        const systemInstruction = `Sei un Direttore dei Lavori esperto in restauro, impianti e normative edilizie in Puglia. Fornisci un'analisi sintetica e azionabile.`;
+        try {
+          const text = await GeminiService.analyzePhoto({ prompt, base64Image: imageDataUrl, systemInstruction });
+          setAiResultText(text);
+        } catch (err) {
+          setAiResultText(`Errore analisi visiva: ${err.message}`);
+        } finally {
+          setAiLoading(false);
+        }
+      };
+
+      return (
+        <div className="min-h-screen flex flex-col font-sans selection:bg-amber-500 selection:text-slate-950">
+          
+          {/* Toast Notification */}
+          {toastMessage && (
+            <div className="fixed bottom-20 md:bottom-6 right-4 sm:right-6 z-50 bg-amber-500 text-slate-950 font-black px-4 py-2.5 rounded-2xl shadow-2xl flex items-center gap-2 border border-amber-400 animate-bounce">
+              <Icon name="sparkles" className="w-4 h-4 text-slate-950" />
+              <span className="text-xs">{toastMessage}</span>
+            </div>
+          )}
+
+          {/* Top Header */}
+          <header className="border-b border-slate-800/80 bg-slate-900/90 backdrop-blur sticky top-0 z-40">
+            {/* macOS Window Titlebar Style */}
+            <div className="hidden lg:flex items-center justify-between px-4 py-1 bg-slate-950/60 border-b border-slate-800/40 text-[10px] text-slate-400 font-mono">
+              <div className="flex items-center gap-1.5">
+                <span className="w-2.5 h-2.5 rounded-full bg-rose-500/80 inline-block"></span>
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-500/80 inline-block"></span>
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80 inline-block"></span>
+                <span className="ml-2 text-slate-300 font-bold">Des'Ark CantierePro • macOS & iOS Suite</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-emerald-400 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                  Arch. Romolo S. de Seneen • Ordine Architetti FG n. 650
+                </span>
+                <span>Foggia (Capitanata, Puglia)</span>
+              </div>
+            </div>
+
+            <div className="max-w-7xl mx-auto px-4 py-2.5 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <DesArkLogo className="w-9 h-9" showText={true} />
+              </div>
+
+              {/* Site Selector & Top Actions */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <select
+                  value={selectedCantiereId}
+                  onChange={(e) => setSelectedCantiereId(e.target.value)}
+                  className="bg-slate-950 border border-slate-700 text-white text-xs font-semibold rounded-xl px-2.5 py-1.5 outline-none focus:border-amber-500 cursor-pointer max-w-[220px] sm:max-w-[280px] truncate"
+                >
+                  {cantieri.map(c => (
+                    <option key={c.id} value={c.id}>
+                      {c.codice} — {c.ubicazione.indirizzo}
+                    </option>
+                  ))}
+                </select>
+
+                <button
+                  onClick={() => setIsNewCantiereModalOpen(true)}
+                  className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 shadow transition-all"
+                  title="Aggiungi una nuova commessa"
+                >
+                  <Icon name="plus" className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Nuovo Cantiere</span>
+                </button>
+
+                {/* Gemini AI Trigger */}
+                <button
+                  onClick={() => {
+                    setAiActiveTab('copilot');
+                    setIsAiModalOpen(true);
+                  }}
+                  className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-black px-3 py-1.5 rounded-xl text-xs flex items-center gap-1.5 shadow-lg border border-purple-400/30"
+                  title="Apri Assistente AI Gemini 3 Flash con Google Search Grounding"
+                >
+                  <Icon name="sparkles" className="w-3.5 h-3.5 text-amber-300" />
+                  <span>Gemini Copilot</span>
+                </button>
+
+                {/* AirDrop Sync Buttons */}
+                <div className="flex items-center gap-1 bg-slate-950 border border-slate-800 p-1 rounded-xl">
+                  <button
+                    onClick={handleExportAirDrop}
+                    title="Esporta Fascicolo per AirDrop / iCloud"
+                    className="p-1.5 hover:bg-slate-800 text-slate-300 hover:text-amber-400 rounded-lg transition-colors"
+                  >
+                    <Icon name="download" className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    title="Importa Fascicolo da file JSON"
+                    className="p-1.5 hover:bg-slate-800 text-slate-300 hover:text-sky-400 rounded-lg transition-colors"
+                  >
+                    <Icon name="upload" className="w-3.5 h-3.5" />
+                  </button>
+                  <input type="file" ref={fileInputRef} accept="application/json" onChange={handleImportAirDrop} className="hidden" />
+                </div>
+
+                {/* Role Switcher */}
+                <div className="bg-slate-950 border border-slate-800 p-0.5 rounded-xl flex items-center text-xs font-bold">
+                  <button
+                    onClick={() => setUserRole('studio')}
+                    className={`px-2.5 py-1 rounded-lg transition-all ${userRole === 'studio' ? 'bg-amber-500 text-slate-950' : 'text-slate-400 hover:text-white'}`}
+                  >
+                    Studio D.L.
+                  </button>
+                  <button
+                    onClick={() => setUserRole('committente')}
+                    className={`px-2.5 py-1 rounded-lg transition-all ${userRole === 'committente' ? 'bg-sky-500 text-slate-950' : 'text-slate-400 hover:text-white'}`}
+                  >
+                    Cliente
+                  </button>
+                </div>
+              </div>
+            </div>
+          </header>
+
+          {/* Studio Primary Workspace Navigation Tabs */}
+          {userRole === 'studio' && (
+            <nav className="border-b border-slate-800 bg-slate-900/60 sticky top-[49px] lg:top-[69px] z-30 backdrop-blur overflow-x-auto scrollbar-none">
+              <div className="max-w-7xl mx-auto px-4 flex items-center gap-1 py-1.5 min-w-max text-xs font-bold">
+                {[
+                  { id: 'avvio', label: '1. Avvio & SUE', icon: 'building' },
+                  { id: 'rilievo', label: '2. Rilievo & Diagnosi', icon: 'ruler' },
+                  { id: 'disegni', label: '3. Tavole & CAD', icon: 'layers' },
+                  { id: 'offerta', label: '4. Preventivo & Offerta', icon: 'fileText' },
+                  { id: 'computo', label: '5. Computo & SAL', icon: 'spreadsheet' },
+                  { id: 'sicurezza', label: '6. Sicurezza SPESAL', icon: 'shield' },
+                  { id: 'varianti', label: '7. Varianti & Foto', icon: 'folderGit' },
+                  { id: 'giornale', label: '8. Giornale Lavori', icon: 'hardhat' },
+                  { id: 'modelli', label: '9. Hub Modelli Legge', icon: 'copy' }
+                ].map(tab => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveWorkspace(tab.id)}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-xl transition-all ${
+                      activeWorkspace === tab.id
+                        ? 'bg-amber-500 text-slate-950 font-black shadow-md'
+                        : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                    }`}
+                  >
+                    <Icon name={tab.icon} className="w-3.5 h-3.5" />
+                    <span>{tab.label}</span>
+                  </button>
+                ))}
+              </div>
+            </nav>
+          )}
+
+          {/* Main Workspaces Layout */}
+          <main className="max-w-7xl mx-auto px-4 py-5 flex-1 w-full space-y-6">
+            
+            {}
+            {userRole === 'committente' && (
+              <div className="space-y-6">
+                <div className="bg-gradient-to-r from-sky-950/70 via-slate-900 to-indigo-950/70 border border-sky-500/40 p-6 rounded-3xl shadow-2xl">
+                  <span className="text-[10px] font-mono font-bold tracking-widest text-sky-400 uppercase bg-sky-500/10 px-2.5 py-1 rounded-full border border-sky-500/20">
+                    Portale Riservato Committente
+                  </span>
+                  <h1 className="text-xl font-black text-white mt-2">
+                    {currentCantiere.titolo}
+                  </h1>
+                  <p className="text-xs text-slate-300 mt-1">
+                    Committente: <strong>{currentCantiere.committente.nome}</strong> • Direttore dei Lavori: <strong>{currentCantiere.architettoDL}</strong>
+                  </p>
+                  
+                  {/* Progress Gauge */}
+                  <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3 bg-slate-950/80 p-4 rounded-2xl border border-slate-800 text-xs">
+                    <div>
+                      <span className="text-slate-400 block text-[11px]">Avanzamento Lavori (SAL)</span>
+                      <strong className="text-2xl font-black text-amber-400 font-mono mt-0.5 block">{cantiereMetrics.salPerc}%</strong>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block text-[11px]">Importo Contrattuale Approvato</span>
+                      <strong className="text-lg font-bold text-white font-mono mt-1 block">€ {cantiereMetrics.contrattoTot.toLocaleString('it-IT', { minimumFractionDigits: 2 })}</strong>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block text-[11px]">Data Consegna Prevista</span>
+                      <strong className="text-lg font-bold text-sky-400 font-mono mt-1 block">{currentCantiere.dataFinePrevista}</strong>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Client Photo Variant Request Form */}
+                <div className="bg-slate-950 border border-slate-800 p-6 rounded-3xl shadow-xl space-y-4">
+                  <div className="border-b border-slate-800 pb-3">
+                    <h3 className="text-base font-bold text-white flex items-center gap-2">
+                      <Icon name="camera" className="w-5 h-5 text-amber-400" />
+                      <span>Sportello Richieste di Modifica & Varianti con Foto</span>
+                    </h3>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      Scatta o allega una fotografia dal tuo sopralluogo per richiedere una modifica o miglioria all'Arch. Romolo S. de Seneen.
+                    </p>
+                  </div>
+
+                  <form onSubmit={(e) => {
+                    e.preventDefault();
+                    setIsNewVarianteModalOpen(true);
+                  }} className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setIsNewVarianteModalOpen(true)}
+                      className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-4 py-2.5 rounded-xl text-xs flex items-center gap-2 shadow"
+                    >
+                      <Icon name="plus" className="w-4 h-4" />
+                      <span>+ Invia Nuova Richiesta con Fotografia</span>
+                    </button>
+                  </form>
+
+                  {/* List of Client's Variants */}
+                  <div className="space-y-3 pt-2">
+                    {(currentCantiere.varianti || []).map(v => (
+                      <div key={v.id} className="bg-slate-900/70 border border-slate-800 p-4 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                        <div className="flex items-center gap-3">
+                          {v.foto && (
+                            <img src={v.foto} alt="Foto variante" className="w-20 h-16 object-cover rounded-xl border border-slate-700 shrink-0" />
+                          )}
+                          <div>
+                            <span className="font-mono text-[10px] text-amber-400 font-bold">{v.protocollo} • {v.data}</span>
+                            <h4 className="text-xs font-bold text-white mt-0.5">{v.titolo}</h4>
+                            <p className="text-[11px] text-slate-300 mt-0.5">{v.motivazione}</p>
+                            <span className="text-[10px] text-sky-400 font-mono mt-1 block">D.L.: {v.noteDL}</span>
+                          </div>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <span className="font-mono text-xs font-bold text-emerald-400 block">+€ {v.deltaImporto.toLocaleString('it-IT')}</span>
+                          <span className="font-mono text-[11px] text-amber-400 block">+{v.prorogaGiorni} gg proroga</span>
+                          <span className="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full inline-block mt-1">
+                            {v.statoCliente}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Approved Drawings for Client */}
+                <div className="bg-slate-950 border border-slate-800 p-6 rounded-3xl shadow-xl space-y-4">
+                  <h3 className="text-base font-bold text-white flex items-center gap-2">
+                    <Icon name="layers" className="w-5 h-5 text-sky-400" />
+                    <span>Tavole di Progetto Approvate (PDF)</span>
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {(currentCantiere.disegni || []).map(d => (
+                      <div key={d.id} className="bg-slate-900/60 border border-slate-800 p-3.5 rounded-2xl flex items-center justify-between">
+                        <div>
+                          <span className="font-mono text-[10px] text-amber-400 font-bold">{d.codice} ({d.scala})</span>
+                          <h4 className="text-xs font-bold text-white">{d.titolo}</h4>
+                        </div>
+                        <span className="text-xs font-bold text-sky-400 bg-sky-500/10 px-2.5 py-1 rounded-xl border border-sky-500/20">
+                          {d.rev}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {}
+            {userRole === 'studio' && activeWorkspace === 'avvio' && (
+              <div className="space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-950 border border-slate-800 p-5 rounded-3xl shadow-xl">
+                  <div>
+                    <h2 className="text-base font-bold text-white flex items-center gap-2">
+                      <Icon name="building" className="w-5 h-5 text-amber-400" />
+                      <span>Fase 1: Avvio Cantiere, Regime Edilizio SUE & Legge Salva Casa</span>
+                    </h2>
+                    <p className="text-xs text-slate-400 mt-1">
+                      Inquadramento del titolo abilitativo, calcolo automatico delle tolleranze costruttive ed esecutive ex Legge 105/2024 e gestione del cantiere.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setIsNewCantiereModalOpen(true)}
+                      className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow"
+                    >
+                      <Icon name="plus" className="w-3.5 h-3.5" />
+                      <span>Inizializza Cantiere</span>
+                    </button>
+                    <button
+                      onClick={() => setIsDeleteCantiereModalOpen(true)}
+                      disabled={cantieri.length <= 1}
+                      className="bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-500/30 font-bold px-3 py-2 rounded-xl text-xs flex items-center gap-1 disabled:opacity-40"
+                    >
+                      <Icon name="trash" className="w-3.5 h-3.5" />
+                      <span>Elimina</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Practice Qualification Tool based on Planned Works */}
+                <div className="bg-slate-950 border border-slate-800 p-5 rounded-3xl space-y-4 shadow-xl">
+                  <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                      <Icon name="sparkles" className="w-4 h-4 text-amber-400" />
+                      <span>Configuratore Pratica Edilizia SUE in base ai Lavori</span>
+                    </h3>
+                    <span className="text-[10px] font-mono text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
+                      D.P.R. 380/01 e s.m.i.
+                    </span>
+                  </div>
+
+                  <p className="text-xs text-slate-300">
+                    Spunta le tipologie di lavorazione previste per verificare il regime abilitativo cogente per il Comune di Foggia:
+                  </p>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 text-xs">
+                    {[
+                      { key: 'tramezziGasbeton', label: 'Nuovi Tramezzi / Demolizioni Interne' },
+                      { key: 'impiantiTecnologici', label: 'Rifacimento Impianti Tecnologici D.M. 37/08' },
+                      { key: 'finitureOrdinarie', label: 'Sola Sostituzione Pavimenti / Tinteggiature' },
+                      { key: 'operePortantiCerchiature', label: 'Interventi su Elementi Strutturali / Solai' },
+                      { key: 'modificheProspetto', label: 'Modifiche Aperture su Prospetto Esterno' },
+                      { key: 'volumetriaSagoma', label: 'Incremento Volumetrico o Sagoma' }
+                    ].map(item => (
+                      <label key={item.key} className="flex items-center gap-2 bg-slate-900/70 p-3 rounded-2xl border border-slate-800/80 cursor-pointer hover:border-slate-700">
+                        <input
+                          type="checkbox"
+                          checked={workTypeSelection[item.key]}
+                          onChange={(e) => setWorkTypeSelection(prev => ({ ...prev, [item.key]: e.target.checked }))}
+                          className="w-4 h-4 accent-amber-500 rounded"
+                        />
+                        <span className="text-slate-200">{item.label}</span>
+                      </label>
+                    ))}
+                  </div>
+
+                  {/* Calculated Practice Result */}
+                  <div className="bg-slate-900 p-4 rounded-2xl border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-slate-400 block">Titolo Abilitativo Richiesto:</span>
+                      <strong className="text-sm font-black text-amber-400">
+                        {workTypeSelection.volumetriaSagoma ? 'Permesso di Costruire (PdC - Art. 10 D.P.R. 380/01)' :
+                         workTypeSelection.operePortantiCerchiature || workTypeSelection.modificheProspetto ? 'S.C.I.A. (Segnalazione Certificata Inizio Attività - Art. 22)' :
+                         workTypeSelection.tramezziGasbeton || workTypeSelection.impiantiTecnologici ? 'C.I.L.A. Asseverata (Art. 6-bis D.P.R. 380/01)' :
+                         'Edilizia Libera (Art. 6 D.P.R. 380/01 e Glossario D.M. 02/03/2018)'}
+                      </strong>
+                      <span className="text-[11px] text-slate-300 block mt-0.5">
+                        Tolleranza Costruttiva/Esecutiva ex Art. 34-bis (Decreto Salva Casa Legge 105/2024): 
+                        <strong className="text-emerald-400 font-mono ml-1">
+                          {currentCantiere.ubicazione.superficieMq <= 100 ? '5%' :
+                           currentCantiere.ubicazione.superficieMq <= 300 ? '4%' :
+                           currentCantiere.ubicazione.superficieMq <= 500 ? '3%' : '2%'}
+                        </strong> (per immobile da {currentCantiere.ubicazione.superficieMq} mq).
+                      </span>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        const calculatedTitle = workTypeSelection.volumetriaSagoma ? 'Permesso di Costruire (Art. 10 D.P.R. 380/01)' :
+                                               workTypeSelection.operePortantiCerchiature || workTypeSelection.modificheProspetto ? 'S.C.I.A. Asseverata (Art. 22)' :
+                                               workTypeSelection.tramezziGasbeton || workTypeSelection.impiantiTecnologici ? 'C.I.L.A. Asseverata prot. n. SUE Foggia' :
+                                               'Edilizia Libera (Art. 6 D.P.R. 380/01)';
+                        setCantieri(prev => prev.map(c => c.id === currentCantiere.id ? { ...c, titoloEdilizio: calculatedTitle } : c));
+                        showToast(`Titolo aggiornato in: ${calculatedTitle}`);
+                      }}
+                      className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-3.5 py-2 rounded-xl whitespace-nowrap shadow"
+                    >
+                      Applica al Cantiere
+                    </button>
+                  </div>
+                </div>
+
+                {/* SUE Administrative Checklist */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-slate-950 border border-slate-800 p-5 rounded-3xl space-y-3 text-xs shadow-xl">
+                    <span className="text-[10px] font-bold text-sky-400 uppercase tracking-wider block">Fascicolo Documenti SUE Foggia</span>
+                    <ul className="space-y-2 text-slate-300">
+                      <li className="flex items-center gap-2">
+                        <Icon name="check" className="w-4 h-4 text-emerald-400" />
+                        <span>Titolo di Proprietà (Atto di compravendita Notaio Dott. Trisorio)</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Icon name="check" className="w-4 h-4 text-emerald-400" />
+                        <span>Planimetria Catastale d'impianto del 1975 e Visura Storica NCEU</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Icon name="check" className="w-4 h-4 text-emerald-400" />
+                        <span>Ricevuta pagamento Diritti di Segreteria SUE Comune di Foggia (€ 150,00)</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <Icon name="check" className="w-4 h-4 text-emerald-400" />
+                        <span>Dichiarazione Asseverata Arch. Romolo S. de Seneen (Albo FG n. 650)</span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div className="bg-slate-950 border border-slate-800 p-5 rounded-3xl space-y-3 text-xs shadow-xl">
+                    <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider block">Verbale di Consegna dei Lavori</span>
+                    <p className="text-slate-300 leading-relaxed">
+                      L'immissione in possesso dell'immobile a favore dell'impresa <strong>{currentCantiere.impresaAffidataria}</strong> decorre dal <strong>{currentCantiere.dataInizio}</strong>. Da tale data sono computati i 165 giorni naturali e consecutivi contrattuali.
+                    </p>
+                    <button
+                      onClick={() => {
+                        setActiveWorkspace('modelli');
+                        showToast('Aperto modello ufficiale Verbale di Consegna Lavori');
+                      }}
+                      className="text-amber-400 hover:text-amber-300 font-bold flex items-center gap-1.5"
+                    >
+                      <Icon name="fileText" className="w-4 h-4" />
+                      <span>Visualizza Verbale di Consegna Ufficiale</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {}
+            {userRole === 'studio' && activeWorkspace === 'rilievo' && (
+              <div className="space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-950 border border-slate-800 p-5 rounded-3xl shadow-xl">
+                  <div>
+                    <h2 className="text-base font-bold text-white flex items-center gap-2">
+                      <Icon name="ruler" className="w-5 h-5 text-amber-400" />
+                      <span>Fase 2: Rilievo Geometrico Laser Vani & Diagnostica Preesistente</span>
+                    </h2>
+                    <p className="text-xs text-slate-400 mt-1">
+                      Libretto misure vano per vano, verifica automatica dei Rapporti Aeroilluminanti (R.A.I. ≥ 1/8 ex D.M. 05/07/1975) e archivio diagnosi editabili.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setIsNewVanoModalOpen(true)}
+                    className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow"
+                  >
+                    <Icon name="plus" className="w-3.5 h-3.5" />
+                    <span>+ Aggiungi Vano Rilevato</span>
+                  </button>
+                </div>
+
+                {/* Room Laser Survey Table */}
+                <div className="bg-slate-950 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-slate-900 border-b border-slate-800 text-slate-400 uppercase text-[10px] font-bold">
+                        <tr>
+                          <th className="py-3 px-4">Ambiente / Vano</th>
+                          <th className="py-3 px-4 text-center">Dimensioni (m)</th>
+                          <th className="py-3 px-4 text-right">Altezza (m)</th>
+                          <th className="py-3 px-4 text-right">Sup. Calpestio</th>
+                          <th className="py-3 px-4 text-right">Volume</th>
+                          <th className="py-3 px-4 text-center">R.A.I. Calcolato</th>
+                          <th className="py-3 px-4 text-center">Esito R.A.I.</th>
+                          <th className="py-3 px-4">Note Stratigrafia</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-800 font-mono">
+                        {(currentCantiere.rilievo?.vani || []).map(v => (
+                          <tr key={v.id} className="hover:bg-slate-900/40">
+                            <td className="py-3 px-4 font-sans font-bold text-white">{v.nome}</td>
+                            <td className="py-3 px-4 text-center">{v.lun.toFixed(2)} × {v.lar.toFixed(2)}</td>
+                            <td className="py-3 px-4 text-right">{v.alt.toFixed(2)}</td>
+                            <td className="py-3 px-4 text-right font-bold text-amber-400">{v.sup.toFixed(2)} mq</td>
+                            <td className="py-3 px-4 text-right text-slate-300">{v.vol.toFixed(2)} mc</td>
+                            <td className="py-3 px-4 text-center">{v.rai > 0 ? `${(v.rai * 100).toFixed(1)}%` : 'Cieco'}</td>
+                            <td className="py-3 px-4 text-center">
+                              <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                v.raiConforme ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-300'
+                              }`}>
+                                {v.raiConforme ? 'Conforme ≥ 1/8' : 'Aspiraz. Meccanica'}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4 font-sans text-slate-400 text-[11px]">{v.note}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Pre-Existing Pathologies Diagnostic Management (Editable) */}
+                <div className="bg-slate-950 border border-slate-800 p-5 rounded-3xl space-y-4 shadow-xl">
+                  <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <div>
+                      <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                        <Icon name="sparkles" className="w-4 h-4 text-amber-400" />
+                        <span>Diagnostica Problematiche Preesistenti (Pre-Operam)</span>
+                      </h3>
+                      <p className="text-[11px] text-slate-400">Rilievi strumentali, solai, umidità tufo, termografia FLIR e fognature editabili.</p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setEditingDiagnosis({
+                          id: `diag-${Date.now()}`,
+                          categoria: 'Strutture & Solai',
+                          titolo: '',
+                          gravita: 'Media',
+                          rilievo: '',
+                          prescrizione: ''
+                        });
+                        setIsEditDiagnosisModalOpen(true);
+                      }}
+                      className="bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1 border border-slate-700"
+                    >
+                      <Icon name="plus" className="w-3.5 h-3.5" />
+                      <span>+ Nuova Diagnosi</span>
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {(currentCantiere.diagnostica || []).map(diag => (
+                      <div key={diag.id} className="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl space-y-2.5 text-xs flex flex-col justify-between">
+                        <div>
+                          <div className="flex items-center justify-between">
+                            <span className="font-mono text-[10px] text-amber-400 uppercase font-bold">{diag.categoria}</span>
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                              diag.gravita === 'Alta' ? 'bg-rose-500/20 text-rose-400' :
+                              diag.gravita === 'Media' ? 'bg-amber-500/20 text-amber-400' : 'bg-sky-500/20 text-sky-400'
+                            }`}>
+                              Gravità: {diag.gravita}
+                            </span>
+                          </div>
+                          <h4 className="font-bold text-white text-sm mt-1">{diag.titolo}</h4>
+                          <p className="text-slate-300 mt-1 leading-relaxed"><strong>Rilievo Strumentale:</strong> {diag.rilievo}</p>
+                          <div className="bg-amber-500/10 p-2.5 rounded-xl border border-amber-500/20 mt-2 text-amber-200">
+                            <strong>Prescrizione D.L.:</strong> {diag.prescrizione}
+                          </div>
+                        </div>
+
+                        <div className="pt-2 border-t border-slate-800 flex justify-end gap-2">
+                          <button
+                            onClick={() => {
+                              setEditingDiagnosis(diag);
+                              setIsEditDiagnosisModalOpen(true);
+                            }}
+                            className="text-amber-400 hover:text-white font-bold flex items-center gap-1 text-[11px]"
+                          >
+                            <Icon name="edit" className="w-3 h-3" />
+                            <span>Modifica Diagnosi</span>
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {}
+            {userRole === 'studio' && activeWorkspace === 'disegni' && (
+              <div className="space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-950 border border-slate-800 p-5 rounded-3xl shadow-xl">
+                  <div>
+                    <h2 className="text-base font-bold text-white flex items-center gap-2">
+                      <Icon name="layers" className="w-5 h-5 text-amber-400" />
+                      <span>Fase 3: Tavole di Progetto, Elaborati Esecutivi & Blueprint CAD</span>
+                    </h2>
+                    <p className="text-xs text-slate-400 mt-1">
+                      Archivio tavole grafiche suddivise per disciplina (Architettonico, Idrico, Termico, Elettrico, Sicurezza) e CAD interattivo.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setIsNewTavolaModalOpen(true)}
+                    className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow"
+                  >
+                    <Icon name="plus" className="w-3.5 h-3.5" />
+                    <span>+ Carica Nuova Tavola</span>
+                  </button>
+                </div>
+
+                {/* Interactive CAD Blueprint 1:50 */}
+                <div className="bg-slate-950 border border-slate-800 p-5 rounded-3xl space-y-4 shadow-xl">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                      <h3 className="font-mono text-xs font-bold text-white uppercase">Blueprint Vettoriale Interattivo (Scala 1:50)</h3>
+                    </div>
+                    {/* Layer Switcher */}
+                    <div className="flex flex-wrap gap-1.5 text-xs font-mono">
+                      {[
+                        { id: 'tutti', label: 'Tutti i Layer' },
+                        { id: 'quote', label: 'Quote' },
+                        { id: 'gialli_rossi', label: 'Gialli & Rossi' },
+                        { id: 'impianti', label: 'Impianti & Luce' },
+                        { id: 'arredi', label: 'Arredi' }
+                      ].map(l => (
+                        <button
+                          key={l.id}
+                          onClick={() => setCadActiveLayer(l.id)}
+                          className={`px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all ${
+                            cadActiveLayer === l.id ? 'bg-amber-500 text-slate-950 border-amber-400' : 'bg-slate-900 text-slate-400 border-slate-800'
+                          }`}
+                        >
+                          {l.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Blueprint SVG Canvas */}
+                  <div className="w-full h-80 bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden flex items-center justify-center p-4 relative">
+                    <svg className="w-full h-full max-h-72" viewBox="0 0 800 360" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <defs>
+                        <pattern id="gridPattern" width="20" height="20" patternUnits="userSpaceOnUse">
+                          <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#1e293b" strokeWidth="0.5"/>
+                        </pattern>
+                      </defs>
+                      <rect width="800" height="360" fill="url(#gridPattern)"/>
+                      
+                      {/* Perimeter Walls */}
+                      <rect x="60" y="40" width="680" height="280" stroke="#f59e0b" strokeWidth="8" rx="2"/>
+                      <line x1="300" y1="40" x2="300" y2="320" stroke="#64748b" strokeWidth="4"/>
+                      <line x1="300" y1="180" x2="740" y2="180" stroke="#64748b" strokeWidth="4"/>
+
+                      {/* Yellow / Red Variants */}
+                      {(cadActiveLayer === 'tutti' || cadActiveLayer === 'gialli_rossi') && (
+                        <>
+                          <line x1="300" y1="80" x2="300" y2="160" stroke="#eab308" strokeWidth="6" strokeDasharray="6 4"/>
+                          <text x="310" y="125" fill="#eab308" fontSize="10" fontFamily="monospace" fontWeight="bold">DEMOLIZIONE TRAMEZZO (GIALLO)</text>
+                          <line x1="500" y1="180" x2="500" y2="320" stroke="#ef4444" strokeWidth="5"/>
+                          <rect x="495" y="230" width="10" height="40" fill="#ef4444"/>
+                          <text x="515" y="255" fill="#ef4444" fontSize="10" fontFamily="monospace" fontWeight="bold">NUOVO GASBETON (ROSSO)</text>
+                        </>
+                      )}
+
+                      {/* MEP Systems Layer */}
+                      {(cadActiveLayer === 'tutti' || cadActiveLayer === 'impianti') && (
+                        <>
+                          <circle cx="100" cy="80" r="7" fill="#10b981"/>
+                          <text x="115" y="84" fill="#10b981" fontSize="10" fontFamily="sans-serif">Centralino 36 DIN</text>
+                          <circle cx="200" cy="315" r="5" fill="#38bdf8"/>
+                          <text x="215" y="318" fill="#38bdf8" fontSize="9" fontFamily="sans-serif">Collettore Radiante</text>
+                          <circle cx="580" cy="240" r="6" fill="#a855f7"/>
+                          <text x="595" y="244" fill="#a855f7" fontSize="9" fontFamily="sans-serif">Pompa Calore A+++</text>
+                        </>
+                      )}
+
+                      {/* Dimensions Layer */}
+                      {(cadActiveLayer === 'tutti' || cadActiveLayer === 'quote') && (
+                        <>
+                          <line x1="60" y1="25" x2="740" y2="25" stroke="#38bdf8" strokeWidth="1"/>
+                          <text x="380" y="20" fill="#38bdf8" fontSize="10" fontFamily="monospace" textAnchor="middle">LUNGHEZZA TOTALE: 13.60 m</text>
+                        </>
+                      )}
+
+                      {/* Furniture Layer */}
+                      {(cadActiveLayer === 'tutti' || cadActiveLayer === 'arredi') && (
+                        <>
+                          <rect x="120" y="120" width="100" height="60" stroke="#94a3b8" strokeWidth="1.5" strokeDasharray="3 3"/>
+                          <text x="170" y="155" fill="#94a3b8" fontSize="10" textAnchor="middle">Isola Cottura Boffi</text>
+                        </>
+                      )}
+                    </svg>
+                  </div>
+                </div>
+
+                {/* Plates Table by Disciplines */}
+                <div className="bg-slate-950 border border-slate-800 p-5 rounded-3xl space-y-4 shadow-xl">
+                  <h3 className="text-sm font-bold text-white">Archivio Elaborati Grafici per Disciplina</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {(currentCantiere.disegni || []).map(d => (
+                      <div key={d.id} className="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl flex flex-col justify-between">
+                        <div>
+                          <div className="flex items-center justify-between">
+                            <span className="font-mono text-xs font-bold text-amber-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">{d.codice}</span>
+                            <span className="text-[10px] text-slate-400 font-mono">{d.scala} • {d.rev}</span>
+                          </div>
+                          <span className="text-[10px] uppercase font-bold text-sky-400 block mt-2">{d.ambito}</span>
+                          <h4 className="text-xs font-bold text-white mt-0.5">{d.titolo}</h4>
+                          <span className="text-[10px] text-slate-400 font-mono mt-1 block">{d.file} ({d.data})</span>
+                        </div>
+                        <div className="pt-2 border-t border-slate-800/80 mt-3 flex justify-end">
+                          <button
+                            onClick={() => showToast(`Apertura file: ${d.file}`)}
+                            className="bg-slate-800 hover:bg-slate-700 text-amber-400 px-2.5 py-1 rounded-xl text-xs font-bold"
+                          >
+                            Visualizza
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {}
+            {userRole === 'studio' && activeWorkspace === 'offerta' && (
+              <div className="space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-950 border border-slate-800 p-5 rounded-3xl shadow-xl">
+                  <div>
+                    <h2 className="text-base font-bold text-white flex items-center gap-2">
+                      <Icon name="fileText" className="w-5 h-5 text-amber-400" />
+                      <span>Fase 4: Preventivo Dettagliato & Offerta Lavori Esecutivi</span>
+                    </h2>
+                    <p className="text-xs text-slate-400 mt-1">
+                      Offerta per appalto privato a corpo e a misura, sincronizzata in tempo reale con il computo metrico e Prezziario Puglia 2026.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleCopyText(document.getElementById('offerta-container')?.innerText, 'Offerta copiata per invio PEC!')}
+                      className="bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold px-3 py-2 rounded-xl text-xs flex items-center gap-1 border border-slate-700"
+                    >
+                      <Icon name="copy" className="w-3.5 h-3.5" />
+                      <span>Copia per PEC</span>
+                    </button>
+                    <button
+                      onClick={() => window.print()}
+                      className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow"
+                    >
+                      <Icon name="printer" className="w-3.5 h-3.5" />
+                      <span>Stampa Conforme</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Printable Official Offer Layout */}
+                <div id="offerta-container" className="printable-document bg-slate-950 border border-slate-800 rounded-3xl p-6 md:p-10 space-y-6 shadow-2xl text-xs text-slate-200">
+                  
+                  {/* Studio Insignia */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+                    <DesArkLogo className="w-16 h-16" showText={true} />
+                    <div className="text-left sm:text-right font-mono">
+                      <span className="text-amber-400 font-bold block text-sm">DES'ARK STUDIO • ARCHITETTURA & INGEGNERIA</span>
+                      <span className="text-slate-300 block">Arch. Romolo S. de Seneen</span>
+                      <span className="text-slate-400 block text-[11px]">Ordine Architetti, P.P.C. Prov. Foggia n. 650</span>
+                      <span className="text-slate-500 block text-[10px]">PEC: romolo.deseneen@archiworldpec.it • Foggia (FG)</span>
+                    </div>
+                  </div>
+
+                  {/* Contract Header */}
+                  <div className="bg-slate-900/60 p-4 rounded-2xl border border-slate-800 space-y-1">
+                    <strong className="text-amber-400 uppercase text-xs block mb-1">Dati Generali dell'Offerta d'Appalto</strong>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-slate-300">
+                      <div>Committenza: <strong>{currentCantiere.committente.nome}</strong> (C.F. {currentCantiere.committente.codiceFiscale})</div>
+                      <div>Immobile: <strong>{currentCantiere.ubicazione.indirizzo}, {currentCantiere.ubicazione.citta}</strong></div>
+                      <div>Dati Catastali: <strong>{currentCantiere.ubicazione.datiCatastali}</strong></div>
+                      <div>Titolo Edilizio: <strong>{currentCantiere.titoloEdilizio}</strong></div>
+                      <div>Impresa Appaltatrice: <strong>{currentCantiere.impresaAffidataria}</strong></div>
+                      <div>Protocollo Offerta: <strong>OFF-2026-048/DESARK-FG</strong></div>
+                    </div>
+                  </div>
+
+                  {/* Technical Premise */}
+                  <div className="space-y-2">
+                    <h3 className="font-bold text-amber-400 uppercase text-xs">1. Quadro Normativo ed Esecutivo</h3>
+                    <p className="leading-relaxed text-slate-300">
+                      Il presente preventivo costituisce offerta economica vincolante per l'esecuzione integrale dei lavori di manutenzione straordinaria ed efficientamento energetico. Le lavorazioni sono state stimate sulla base del <strong>Prezziario Regionale delle Opere Edili della Regione Puglia 2026</strong>, nel rispetto del <strong>D.P.R. 380/01</strong> e del <strong>Decreto Salva Casa (L. 105/2024 art. 34-bis con tolleranza ≤ 4%)</strong>, del <strong>D.M. 05/07/1975</strong> per i Rapporti Aeroilluminanti (R.A.I. ≥ 1/8) e del <strong>D.Lgs. 81/08 Titolo IV</strong> per la sicurezza.
+                    </p>
+                  </div>
+
+                  {/* Summary Financial Table */}
+                  <div className="space-y-2">
+                    <h3 className="font-bold text-amber-400 uppercase text-xs">2. Computo Metrico Estimativo Analitico (Sintesi Voci)</h3>
+                    <div className="overflow-x-auto rounded-xl border border-slate-800">
+                      <table className="w-full text-left font-mono text-[11px]">
+                        <thead className="bg-slate-900 border-b border-slate-800 text-slate-400 uppercase">
+                          <tr>
+                            <th className="py-2 px-3">Codice Puglia 2026</th>
+                            <th className="py-2 px-3 font-sans">Lavorazione Prevista</th>
+                            <th className="py-2 px-2 text-center">U.M.</th>
+                            <th className="py-2 px-3 text-right">Q.tà</th>
+                            <th className="py-2 px-3 text-right">P.U. (€)</th>
+                            <th className="py-2 px-3 text-right">Totale (€)</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-800">
+                          {(currentCantiere.computo || []).map(v => (
+                            <tr key={v.id}>
+                              <td className="py-2 px-3 text-amber-400 font-bold">{v.codice}</td>
+                              <td className="py-2 px-3 font-sans text-slate-200">{v.desc}</td>
+                              <td className="py-2 px-2 text-center">{v.um}</td>
+                              <td className="py-2 px-3 text-right">{v.qta}</td>
+                              <td className="py-2 px-3 text-right">€ {Number(v.pu).toFixed(2)}</td>
+                              <td className="py-2 px-3 text-right font-bold text-white">€ {(Number(v.qta) * Number(v.pu)).toFixed(2)}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* Financial Recap */}
+                  <div className="bg-slate-900/80 p-5 rounded-2xl border border-slate-800 space-y-2">
+                    <h3 className="font-bold text-amber-400 uppercase text-xs">3. Quadro Economico Generale dell'Offerta</h3>
+                    <div className="space-y-1.5 font-mono text-xs">
+                      <div className="flex justify-between">
+                        <span>A. Lavori a corpo e a misura (soggetti a ribasso):</span>
+                        <strong>€ {cantiereMetrics.totaleComputo.toLocaleString('it-IT', { minimumFractionDigits: 2 })}</strong>
+                      </div>
+                      <div className="flex justify-between text-amber-400">
+                        <span>B. Oneri della Sicurezza PSC (NON SOGGETTI A RIBASSO ex D.Lgs. 81/08):</span>
+                        <strong>€ {Number(currentCantiere.oneriSicurezzaPSC).toLocaleString('it-IT', { minimumFractionDigits: 2 })}</strong>
+                      </div>
+                      <div className="flex justify-between pt-2 border-t border-slate-800 text-sm font-bold text-white">
+                        <span>TOTALE APPALTO (Imponibile):</span>
+                        <span>€ {(cantiereMetrics.totaleComputo + Number(currentCantiere.oneriSicurezzaPSC)).toLocaleString('it-IT', { minimumFractionDigits: 2 })}</span>
+                      </div>
+                      <div className="flex justify-between text-slate-400 text-[11px]">
+                        <span>I.V.A. agevolata al 10% (Manutenzione Straordinaria ex L. 488/99):</span>
+                        <span>€ {((cantiereMetrics.totaleComputo + Number(currentCantiere.oneriSicurezzaPSC)) * 0.10).toLocaleString('it-IT', { minimumFractionDigits: 2 })}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Milestones and Technical Constraints */}
+                  <div className="space-y-2">
+                    <h3 className="font-bold text-amber-400 uppercase text-xs">4. Tempi, Percorso Critico & Collaudi</h3>
+                    <p className="leading-relaxed text-slate-300">
+                      Durata stimata in <strong>165 giorni naturali e consecutivi</strong>. Vincoli cogenti tecnici: <strong>prova di tenuta idraulica a 6 bar per 24 ore</strong> prima del getto dei massetti e <strong>tempo tecnico di maturazione ed essiccazione del massetto radiante pari a 21 giorni naturali</strong> prima della posa delle pavimentazioni in gres.
+                    </p>
+                  </div>
+
+                  {/* Signatures */}
+                  <div className="pt-6 border-t border-slate-800 grid grid-cols-1 sm:grid-cols-3 gap-6 text-center font-mono text-[11px]">
+                    <div>
+                      <span className="block text-slate-400">Il Direttore dei Lavori & CSE</span>
+                      <strong className="text-white mt-1 block">Arch. Romolo S. de Seneen</strong>
+                      <span className="text-[10px] text-slate-500">(Ordine Architetti FG n. 650)</span>
+                      <div className="mt-8 border-b border-slate-700 w-3/4 mx-auto"></div>
+                    </div>
+                    <div>
+                      <span className="block text-slate-400">L'Impresa Appaltatrice</span>
+                      <strong className="text-white mt-1 block">{currentCantiere.impresaAffidataria}</strong>
+                      <div className="mt-12 border-b border-slate-700 w-3/4 mx-auto"></div>
+                    </div>
+                    <div>
+                      <span className="block text-slate-400">La Committenza (Accettazione)</span>
+                      <strong className="text-white mt-1 block">{currentCantiere.committente.nome}</strong>
+                      <div className="mt-12 border-b border-slate-700 w-3/4 mx-auto"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {}
+            {userRole === 'studio' && activeWorkspace === 'computo' && (
+              <div className="space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-950 border border-slate-800 p-5 rounded-3xl shadow-xl">
+                  <div>
+                    <h2 className="text-base font-bold text-white flex items-center gap-2">
+                      <Icon name="spreadsheet" className="w-5 h-5 text-amber-400" />
+                      <span>Fase 5: Computo Metrico Puglia 2026, Cronoprogramma Gantt & Gestione SAL</span>
+                    </h2>
+                    <p className="text-xs text-slate-400 mt-1">
+                      Monitoraggio avanzamento percentuale lavorazioni, diagramma di Gantt e rilascio dei Certificati di Pagamento (CdP).
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => setIsNewCdPModalOpen(true)}
+                      className="bg-emerald-600 hover:bg-emerald-500 text-white font-black px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow"
+                    >
+                      <Icon name="plus" className="w-3.5 h-3.5" />
+                      <span>+ Emetti CdP (SAL)</span>
+                    </button>
+                    <button
+                      onClick={() => setIsNewPrezzoModalOpen(true)}
+                      className="bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold px-3 py-2 rounded-xl text-xs flex items-center gap-1 border border-slate-700"
+                    >
+                      <Icon name="plus" className="w-3.5 h-3.5" />
+                      <span>+ Nuova Voce N.P.</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* BoQ Items & Real-time SAL Slider */}
+                <div className="bg-slate-950 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-slate-900 border-b border-slate-800 text-slate-400 uppercase text-[10px] font-bold">
+                        <tr>
+                          <th className="py-3 px-4">Codice Puglia 2026</th>
+                          <th className="py-3 px-4">Descrizione Lavorazione</th>
+                          <th className="py-3 px-2 text-center">U.M.</th>
+                          <th className="py-3 px-3 text-right">Q.tà</th>
+                          <th className="py-3 px-3 text-right">P.U. (€)</th>
+                          <th className="py-3 px-3 text-right">Totale (€)</th>
+                          <th className="py-3 px-4 text-center w-60">Avanzamento SAL (%)</th>
+                          <th className="py-3 px-2 text-center"></th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-800">
+                        {(currentCantiere.computo || []).map(v => (
+                          <tr key={v.id} className="hover:bg-slate-900/40">
+                            <td className="py-3 px-4 font-mono font-bold text-amber-400">{v.codice}</td>
+                            <td className="py-3 px-4 text-slate-200 max-w-xs">{v.desc}</td>
+                            <td className="py-3 px-2 text-center font-mono">{v.um}</td>
+                            <td className="py-3 px-3 text-right font-mono">{v.qta}</td>
+                            <td className="py-3 px-3 text-right font-mono">€ {Number(v.pu).toFixed(2)}</td>
+                            <td className="py-3 px-3 text-right font-mono font-bold text-white">€ {(Number(v.qta) * Number(v.pu)).toFixed(2)}</td>
+                            <td className="py-3 px-4">
+                              <div className="space-y-1">
+                                <div className="flex justify-between font-mono text-[11px]">
+                                  <span className="text-slate-400">{v.sal || 0}%</span>
+                                  <span className="text-emerald-400 font-bold">€ {(Number(v.qta) * Number(v.pu) * (Number(v.sal) || 0) / 100).toFixed(2)}</span>
+                                </div>
+                                <input
+                                  type="range"
+                                  min="0"
+                                  max="100"
+                                  step="5"
+                                  value={v.sal || 0}
+                                  onChange={(e) => {
+                                    const val = Number(e.target.value);
+                                    setCantieri(prev => prev.map(c => {
+                                      if (c.id !== currentCantiere.id) return c;
+                                      return {
+                                        ...c,
+                                        computo: (c.computo || []).map(item => item.id === v.id ? { ...item, sal: val } : item)
+                                      };
+                                    }));
+                                  }}
+                                  className="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-amber-500"
+                                />
+                              </div>
+                            </td>
+                            <td className="py-3 px-2 text-center">
+                              <button
+                                onClick={() => {
+                                  setCantieri(prev => prev.map(c => {
+                                    if (c.id !== currentCantiere.id) return c;
+                                    return { ...c, computo: (c.computo || []).filter(item => item.id !== v.id) };
+                                  }));
+                                  showToast('Voce rimossa dal computo');
+                                }}
+                                className="text-slate-500 hover:text-rose-400 p-1"
+                              >
+                                <Icon name="trash" className="w-3.5 h-3.5" />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Interactive Gantt Chart */}
+                <div className="bg-slate-950 border border-slate-800 p-5 rounded-3xl space-y-4 shadow-xl">
+                  <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                      <Icon name="calendar" className="w-4 h-4 text-amber-400" />
+                      <span>Cronoprogramma Esecutivo dei Lavori (Diagramma di Gantt)</span>
+                    </h3>
+                    <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                      Proroghe Approvate: +{cantiereMetrics.prorogheGiorni} gg
+                    </span>
+                  </div>
+
+                  <div className="space-y-3 font-mono text-xs">
+                    {[
+                      { fase: "1. Allestimento, Protezioni Condominiali & Demolizioni", dal: "01/03/2026", al: "25/03/2026", prog: 100 },
+                      { fase: "2. Tramezzature Gasbeton, Tracce Impiantistiche & Scarichi", dal: "26/03/2026", al: "25/04/2026", prog: 85 },
+                      { fase: "3. Impianto Radiante a Pavimento, Collaudo 6 bar & Massetto", dal: "26/04/2026", al: "20/05/2026", prog: 90 },
+                      { fase: "4. Maturazione Massetto (21 gg vincolanti) & Posa Gres 60x120", dal: "21/05/2026", al: "25/06/2026", prog: 30 },
+                      { fase: "5. Infissi Uw ≤ 1.0, Porte Filomuro, Tinteggiature & Collaudi", dal: "26/06/2026", al: "15/08/2026", prog: 10 }
+                    ].map((g, idx) => (
+                      <div key={idx} className="bg-slate-900/60 p-3.5 rounded-2xl border border-slate-800 space-y-1.5">
+                        <div className="flex justify-between items-center font-sans text-xs">
+                          <strong className="text-white">{g.fase}</strong>
+                          <span className="text-amber-400 font-mono font-bold">{g.prog}%</span>
+                        </div>
+                        <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                          <div className={`h-full ${g.prog === 100 ? 'bg-emerald-400' : 'bg-amber-400'}`} style={{ width: `${g.prog}%` }}></div>
+                        </div>
+                        <div className="flex justify-between text-[10px] text-slate-400">
+                          <span>Inizio: {g.dal}</span>
+                          <span>Scadenza: {g.al}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Payment Certificates List (CdP) */}
+                <div className="bg-slate-950 border border-slate-800 p-5 rounded-3xl space-y-4 shadow-xl">
+                  <h3 className="text-sm font-bold text-white">Registro Certificati di Pagamento (CdP) Erogati</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {(currentCantiere.certificatiPagamento || []).map(cdp => (
+                      <div key={cdp.id} className="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl space-y-2 text-xs">
+                        <div className="flex justify-between items-center border-b border-slate-800 pb-2">
+                          <span className="font-mono text-amber-400 font-bold">Certificato n. {cdp.numero} ({cdp.data})</span>
+                          <span className="bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded text-[10px] font-bold">{cdp.stato}</span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 text-slate-300 font-mono">
+                          <div>Lavori Netti: <strong>€ {cdp.importoLavoriNetto.toLocaleString('it-IT')}</strong></div>
+                          <div>Oneri Sicurezza: <strong>€ {cdp.quotaSicurezzaPSC.toLocaleString('it-IT')}</strong></div>
+                          <div>Ritenuta 0.50%: <span className="text-rose-400">-€ {cdp.ritenutaGaranzia.toFixed(2)}</span></div>
+                          <div>IVA 10%: <strong>€ {cdp.iva10.toLocaleString('it-IT')}</strong></div>
+                        </div>
+                        <div className="pt-2 border-t border-slate-800 flex justify-between items-center">
+                          <span className="text-[11px] text-slate-400">Totale Liquidabile:</span>
+                          <strong className="text-sm font-bold text-emerald-400 font-mono">€ {cdp.totaleCertificato.toLocaleString('it-IT', { minimumFractionDigits: 2 })}</strong>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {}
+            {userRole === 'studio' && activeWorkspace === 'sicurezza' && (
+              <div className="space-y-6">
+                <div className="bg-slate-950 border border-slate-800 p-5 rounded-3xl shadow-xl">
+                  <h2 className="text-base font-bold text-white flex items-center gap-2">
+                    <Icon name="shield" className="w-5 h-5 text-amber-400" />
+                    <span>Fase 6: Sicurezza nei Cantieri (Titolo IV D.Lgs. 81/08) — SPESAL Foggia</span>
+                  </h2>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Notifica Preliminare Art. 99, Schema Tipo PSC con costi non ribassabili e fascicolo validazione POS imprese.
+                  </p>
+                </div>
+
+                {/* Notifica Preliminare SPESAL Art. 99 */}
+                <div className="bg-slate-950 border border-slate-800 p-5 rounded-3xl space-y-4 shadow-xl">
+                  <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <h3 className="text-sm font-bold text-white">Notifica Preliminare (Art. 99 e Allegato XII D.Lgs. 81/08)</h3>
+                    <span className="font-mono text-xs text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/20">
+                      Prot. {currentCantiere.sicurezza.notificaSpesalProt}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono">
+                    <div className="bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+                      <span className="text-[10px] text-slate-400 font-sans block">Uomini-Giorno Stimati</span>
+                      <strong className="text-amber-400 text-sm mt-0.5 block">{currentCantiere.sicurezza.uominiGiorno} U•G</strong>
+                    </div>
+                    <div className="bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+                      <span className="text-[10px] text-slate-400 font-sans block">Oneri Sicurezza PSC</span>
+                      <strong className="text-emerald-400 text-sm mt-0.5 block">€ {currentCantiere.sicurezza.costiNonRibassabili.toLocaleString('it-IT')}</strong>
+                    </div>
+                    <div className="bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+                      <span className="text-[10px] text-slate-400 font-sans block">Organo Vigilanza</span>
+                      <strong className="text-slate-200 text-xs mt-0.5 block">SPESAL ASL Foggia</strong>
+                    </div>
+                    <div className="bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+                      <span className="text-[10px] text-slate-400 font-sans block">CSE Nominato</span>
+                      <strong className="text-slate-200 text-xs mt-0.5 block">Arch. R. de Seneen</strong>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Contractors Folder & POS Validation */}
+                <div className="bg-slate-950 border border-slate-800 p-5 rounded-3xl space-y-4 shadow-xl">
+                  <h3 className="text-sm font-bold text-white">Fascicolo Imprese Esecutrici & Validazione POS (All. XVII)</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {(currentCantiere.sicurezza.impresePOS || []).map(imp => (
+                      <div key={imp.id} className="bg-slate-900/60 border border-slate-800 p-4 rounded-2xl space-y-2 text-xs flex flex-col justify-between">
+                        <div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] text-amber-400 font-bold uppercase">{imp.ruolo}</span>
+                            <span className="bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded text-[10px] font-bold">POS Validato</span>
+                          </div>
+                          <h4 className="font-bold text-white text-sm mt-1">{imp.ragioneSociale}</h4>
+                          <span className="text-[11px] text-slate-400 font-mono">P.IVA: {imp.piva}</span>
+                          <span className="text-[11px] text-slate-300 block mt-1">D.L.: {imp.datoreLavoro}</span>
+                          <span className="text-[11px] text-emerald-400 font-mono block">DURC: {imp.durcScadenza} (Regolare)</span>
+                        </div>
+                        <div className="pt-2 border-t border-slate-800 text-[10px] text-slate-500 font-mono">
+                          Nulla osta CSE rilasciato il {imp.dataValidazione}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {}
+            {userRole === 'studio' && activeWorkspace === 'varianti' && (
+              <div className="space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-950 border border-slate-800 p-5 rounded-3xl shadow-xl">
+                  <div>
+                    <h2 className="text-base font-bold text-white flex items-center gap-2">
+                      <Icon name="folderGit" className="w-5 h-5 text-amber-400" />
+                      <span>Fase 7: Perizie di Variante in Corso d'Opera con Fotografie</span>
+                    </h2>
+                    <p className="text-xs text-slate-400 mt-1">
+                      Perizie suppletive con allegati fotografici da cantiere, adeguamento prezzi contrattuali e proroghe cronoprogramma.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setIsNewVarianteModalOpen(true)}
+                    className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow"
+                  >
+                    <Icon name="plus" className="w-3.5 h-3.5" />
+                    <span>+ Nuova Perizia di Variante</span>
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  {(currentCantiere.varianti || []).map(v => (
+                    <div key={v.id} className="bg-slate-950 border border-slate-800 p-6 rounded-3xl space-y-3 shadow-xl">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+                        <div>
+                          <span className="font-mono text-xs font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">{v.protocollo} • {v.data}</span>
+                          <h4 className="text-sm font-bold text-white mt-1">{v.titolo}</h4>
+                          <span className="text-[11px] text-slate-400">{v.inquadramento}</span>
+                        </div>
+                        <div className="text-right font-mono text-xs">
+                          <strong className="text-emerald-400 font-bold block">+€ {v.deltaImporto.toLocaleString('it-IT')}</strong>
+                          <span className="text-amber-400 font-bold block">+{v.prorogaGiorni} gg cronoprogramma</span>
+                        </div>
+                      </div>
+
+                      <p className="text-xs text-slate-300"><strong>Motivazione Tecnica D.L.:</strong> {v.motivazione}</p>
+
+                      {v.foto && (
+                        <div className="mt-2 flex flex-wrap items-center gap-3">
+                          <img src={v.foto} alt="Foto variante" className="w-48 h-32 object-cover rounded-xl border border-slate-800" />
+                          <button
+                            onClick={() => handleAiInspectPhoto(v.foto)}
+                            className="bg-purple-950/80 hover:bg-purple-900 text-purple-200 border border-purple-500/30 px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow"
+                          >
+                            <Icon name="sparkles" className="w-3.5 h-3.5 text-amber-400" />
+                            <span>Perizia Fotografica AI con Gemini Vision</span>
+                          </button>
+                        </div>
+                      )}
+
+                      <div className="pt-2 border-t border-slate-800 flex justify-between items-center text-xs">
+                        <span className="text-emerald-400 font-bold">{v.statoCliente}</span>
+                        <span className="text-slate-400 text-[11px]">Note D.L.: {v.noteDL}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {}
+            {userRole === 'studio' && activeWorkspace === 'giornale' && (
+              <div className="space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-950 border border-slate-800 p-5 rounded-3xl shadow-xl">
+                  <div>
+                    <h2 className="text-base font-bold text-white flex items-center gap-2">
+                      <Icon name="hardhat" className="w-5 h-5 text-amber-400" />
+                      <span>Fase 8: Giornale dei Lavori & Ordini di Servizio Formale D.L.</span>
+                    </h2>
+                    <p className="text-xs text-slate-400 mt-1">
+                      Registro quotidiano delle presenze, condizioni meteo, avanzamento delle lavorazioni ed ordini di servizio formali.
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setIsNewGiornaleModalOpen(true)}
+                    className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black px-3.5 py-2 rounded-xl text-xs flex items-center gap-1.5 shadow"
+                  >
+                    <Icon name="plus" className="w-3.5 h-3.5" />
+                    <span>+ Nuovo Rapporto Giornale</span>
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  {(currentCantiere.giornale || []).map(g => (
+                    <div key={g.id} className="bg-slate-950 border border-slate-800 p-5 rounded-3xl space-y-2 text-xs shadow-xl">
+                      <div className="flex justify-between items-center border-b border-slate-800 pb-2">
+                        <span className="font-mono text-amber-400 font-bold text-sm">{g.data} • {g.meteo}</span>
+                        <span className="text-slate-400 font-mono">Operai presenti: <strong className="text-white">{g.operai}</strong> ({g.imprese})</span>
+                      </div>
+                      <p className="text-slate-200 leading-relaxed"><strong>Lavorazioni Eseguite:</strong> {g.attivita}</p>
+                      {g.ordiniDL && (
+                        <div className="bg-amber-500/10 p-3 rounded-2xl border border-amber-500/20 text-amber-200 mt-2">
+                          <strong className="text-amber-400 uppercase text-[10px] block mb-0.5">Ordine di Servizio Direzione Lavori:</strong>
+                          {g.ordiniDL}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {}
+            {userRole === 'studio' && activeWorkspace === 'modelli' && (
+              <div className="space-y-6">
+                <div className="bg-slate-950 border border-slate-800 p-5 rounded-3xl shadow-xl">
+                  <h2 className="text-base font-bold text-white flex items-center gap-2">
+                    <Icon name="copy" className="w-5 h-5 text-amber-400" />
+                    <span>Fase 9: Hub Modelli Documentali Editabili per Pratiche Edilizie & Sicurezza</span>
+                  </h2>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Modelli ufficiali compilabili e pronti per l'inoltro via PEC o stampa con cartiglio dell'Arch. Romolo S. de Seneen.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {[
+                    {
+                      id: 'mod-1',
+                      titolo: '1. Relazione Tecnica Asseverata CILA / SCIA',
+                      norma: 'D.P.R. 380/01 art. 6-bis e L. 105/2024 Salva Casa',
+                      testo: `RELAZIONE TECNICA ASSEVERATA CILA\n(Art. 6-bis D.P.R. 380/01 e s.m.i. - Legge 105/2024 Salva Casa)\n\nIl sottoscritto Arch. Romolo S. de Seneen, iscritto all'Ordine degli Architetti PPC Prov. Foggia al n. 650, in qualità di progettista e direttore dei lavori, assevera che le opere previste per l'immobile sito in ${currentCantiere.ubicazione.indirizzo} (${currentCantiere.ubicazione.citta}) consistono in manutenzione straordinaria senza alterazione della sagoma né mutamento di destinazione d'uso.\nSi attesta il rispetto del rapporto aeroilluminante RAI ≥ 1/8 ex D.M. 05/07/1975 e l'osservanza delle tolleranze costruttive ed esecutive ex Art. 34-bis D.P.R. 380/01.`
+                    },
+                    {
+                      id: 'mod-2',
+                      titolo: '2. Verbale di Consegna dei Lavori',
+                      norma: 'Capitolato Speciale e Codice Civile art. 1655',
+                      testo: `VERBALE DI CONSEGNA DEI LAVORI\nCantiere: ${currentCantiere.codice} - ${currentCantiere.ubicazione.indirizzo}\n\nOggi ${currentCantiere.dataInizio}, il Direttore dei Lavori Arch. Romolo S. de Seneen, alla presenza della Committenza e del Legale Rappresentante dell'Impresa ${currentCantiere.impresaAffidataria}, procede alla formale consegna dell'immobile.\nL'Impresa dichiara di aver preso esatta visione dei luoghi, dei progetti esecutivi e di accettare il termine contrattuale fissato al ${currentCantiere.dataFinePrevista}.`
+                    },
+                    {
+                      id: 'mod-3',
+                      titolo: '3. Notifica Preliminare SPESAL / ITL Foggia',
+                      norma: 'Art. 99 e Allegato XII D.Lgs. 81/2008',
+                      testo: `NOTIFICA PRELIMINARE CANTIERE EDILE (ART. 99 D.LGS. 81/08)\nDestinatari: SPESAL ASL Foggia • ITL Foggia • SUE Comune di Foggia\n\n1. Indirizzo cantiere: ${currentCantiere.ubicazione.indirizzo}, Foggia\n2. Committente: ${currentCantiere.committente.nome}\n3. Natura opere: Ristrutturazione interna ed efficientamento energetico\n4. Coordinatore Sicurezza (CSE): Arch. Romolo S. de Seneen (FG n. 650)\n5. Data presunta inizio: ${currentCantiere.dataInizio}\n6. Durata presunta: 165 giorni\n7. Uomini-Giorno stimati: ${currentCantiere.sicurezza.uominiGiorno} U•G\n8. Impresa Affidataria: ${currentCantiere.impresaAffidataria}`
+                    },
+                    {
+                      id: 'mod-4',
+                      titolo: '4. Ordine di Servizio Formale della D.L.',
+                      norma: 'Direzione Lavori e Capitolato Speciale',
+                      testo: `ORDINE DI SERVIZIO N. ___ DELLA DIREZIONE LAVORI\nCantiere: ${currentCantiere.codice} - ${currentCantiere.ubicazione.indirizzo}\n\nL'Arch. Romolo S. de Seneen, in qualità di D.L., ordina all'Impresa Appaltatrice di procedere inderogabilmente entro 24 ore alle seguenti disposizioni tecniche:\n- Esecuzione prova di tenuta idraulica a 6 bar per 24 ore su impianto radiante\n- Pulizia costante delle scale e dell'androne condominiale a garanzia del decoro.`
+                    }
+                  ].map(m => (
+                    <div key={m.id} className="bg-slate-950 border border-slate-800 p-5 rounded-3xl space-y-3 text-xs shadow-xl flex flex-col justify-between">
+                      <div>
+                        <span className="text-[10px] uppercase font-bold text-amber-400">{m.norma}</span>
+                        <h4 className="font-bold text-white text-sm mt-0.5">{m.titolo}</h4>
+                        <textarea
+                          rows={6}
+                          defaultValue={m.testo}
+                          className="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-slate-200 mt-2 font-mono text-[11px] leading-relaxed"
+                        />
+                      </div>
+                      <div className="pt-2 border-t border-slate-800 flex justify-end gap-2">
+                        <button
+                          onClick={(e) => {
+                            const val = e.currentTarget.parentElement.previousElementSibling.querySelector('textarea').value;
+                            handleCopyText(val, 'Modello copiato per PEC!');
+                          }}
+                          className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1 shadow"
+                        >
+                          <Icon name="copy" className="w-3.5 h-3.5" />
+                          <span>Copia Modello</span>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+          </main>
+
+          {}
+          
+          {/* Modal Nuovo Cantiere */}
+          {isNewCantiereModalOpen && (
+            <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
+              <div className="bg-[#0b1022] border border-amber-500/40 rounded-3xl w-full max-w-lg p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto">
+                <div className="flex justify-between items-center border-b border-slate-800 pb-3">
+                  <h3 className="font-black text-white text-base">Inizializza Nuova Commessa Cantiere</h3>
+                  <button onClick={() => setIsNewCantiereModalOpen(false)} className="text-slate-400 hover:text-white">
+                    <Icon name="x" className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  const newId = `cant-${Date.now()}`;
+                  const nuovo = {
+                    ...INITIAL_CANTIERI[0],
+                    id: newId,
+                    codice: `CANT-${new Date().getFullYear()}-${String(cantieri.length + 1).padStart(3, '0')}`,
+                    titolo: newCantiereForm.titolo || 'Nuova Ristrutturazione Residenziale',
+                    tipologia: newCantiereForm.tipologia,
+                    titoloEdilizio: newCantiereForm.titoloEdilizio,
+                    dataInizio: newCantiereForm.dataInizio,
+                    dataFinePrevista: newCantiereForm.dataFinePrevista,
+                    committente: {
+                      nome: newCantiereForm.committenteNome,
+                      codiceFiscale: newCantiereForm.committenteCF,
+                      telefono: newCantiereForm.committenteTel,
+                      email: newCantiereForm.committenteEmail
+                    },
+                    ubicazione: {
+                      indirizzo: newCantiereForm.indirizzo,
+                      citta: 'Foggia (FG)',
+                      cap: '71121',
+                      superficieMq: Number(newCantiereForm.superficieMq) || 100,
+                      datiCatastali: newCantiereForm.datiCatastali
+                    },
+                    importoContrattoLavori: Number(newCantiereForm.importoContrattoLavori) || 60000,
+                    oneriSicurezzaPSC: Number(newCantiereForm.oneriSicurezzaPSC) || 2800,
+                    impresaAffidataria: newCantiereForm.impresaAffidataria
+                  };
+                  setCantieri([nuovo, ...cantieri]);
+                  setSelectedCantiereId(newId);
+                  setIsNewCantiereModalOpen(false);
+                  showToast(`Cantiere ${nuovo.codice} creato con successo!`);
+                }} className="space-y-3 text-xs">
+                  <div>
+                    <label className="text-slate-300 block mb-1">Titolo dell'Intervento</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Es. Ristrutturazione Appartamento Famiglia Rossi"
+                      value={newCantiereForm.titolo}
+                      onChange={(e) => setNewCantiereForm({ ...newCantiereForm, titolo: e.target.value })}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-slate-300 block mb-1">Committente</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="Nome e Cognome"
+                        value={newCantiereForm.committenteNome}
+                        onChange={(e) => setNewCantiereForm({ ...newCantiereForm, committenteNome: e.target.value })}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-slate-300 block mb-1">Codice Fiscale</label>
+                      <input
+                        type="text"
+                        placeholder="C.F."
+                        value={newCantiereForm.committenteCF}
+                        onChange={(e) => setNewCantiereForm({ ...newCantiereForm, committenteCF: e.target.value })}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-slate-300 block mb-1">Indirizzo Immobile</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="Via / Corso, n. civico"
+                        value={newCantiereForm.indirizzo}
+                        onChange={(e) => setNewCantiereForm({ ...newCantiereForm, indirizzo: e.target.value })}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-slate-300 block mb-1">Superficie Utile (mq)</label>
+                      <input
+                        type="number"
+                        value={newCantiereForm.superficieMq}
+                        onChange={(e) => setNewCantiereForm({ ...newCantiereForm, superficieMq: e.target.value })}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-slate-300 block mb-1">Importo Lavori (€)</label>
+                      <input
+                        type="number"
+                        value={newCantiereForm.importoContrattoLavori}
+                        onChange={(e) => setNewCantiereForm({ ...newCantiereForm, importoContrattoLavori: e.target.value })}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-slate-300 block mb-1">Oneri Sicurezza (€)</label>
+                      <input
+                        type="number"
+                        value={newCantiereForm.oneriSicurezzaPSC}
+                        onChange={(e) => setNewCantiereForm({ ...newCantiereForm, oneriSicurezzaPSC: e.target.value })}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="pt-3 flex justify-end gap-2">
+                    <button type="button" onClick={() => setIsNewCantiereModalOpen(false)} className="bg-slate-800 px-4 py-2 rounded-xl text-xs">Annulla</button>
+                    <button type="submit" className="bg-amber-500 text-slate-950 font-black px-4 py-2 rounded-xl text-xs">Crea Commessa</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* Modal Elimina Cantiere */}
+          {isDeleteCantiereModalOpen && (
+            <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
+              <div className="bg-[#0b1022] border border-rose-500/40 rounded-3xl w-full max-w-md p-6 space-y-4 shadow-2xl">
+                <h3 className="font-bold text-white text-base">Conferma Eliminazione Commessa</h3>
+                <p className="text-xs text-slate-300">
+                  Sei sicuro di voler eliminare la commessa <strong>{currentCantiere.codice}</strong> ({currentCantiere.ubicazione.indirizzo})? Tutti i dati di computo e rilievo verranno rimossi.
+                </p>
+                <div className="flex justify-end gap-2 pt-2">
+                  <button onClick={() => setIsDeleteCantiereModalOpen(false)} className="bg-slate-800 px-4 py-2 rounded-xl text-xs">Annulla</button>
+                  <button
+                    onClick={() => {
+                      const rimanenti = cantieri.filter(c => c.id !== currentCantiere.id);
+                      setCantieri(rimanenti);
+                      setSelectedCantiereId(rimanenti[0].id);
+                      setIsDeleteCantiereModalOpen(false);
+                      showToast('Commessa eliminata.');
+                    }}
+                    className="bg-rose-600 hover:bg-rose-500 text-white font-bold px-4 py-2 rounded-xl text-xs"
+                  >
+                    Elimina Definitivamente
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Modal Gemini AI Copilot */}
+          {isAiModalOpen && (
+            <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
+              <div className="bg-[#0b1022] border border-purple-500/40 rounded-3xl w-full max-w-2xl max-h-[90vh] flex flex-col p-6 space-y-4 shadow-2xl overflow-hidden">
+                <div className="flex justify-between items-center border-b border-slate-800 pb-3">
+                  <div className="flex items-center gap-2">
+                    <Icon name="sparkles" className="w-5 h-5 text-amber-400" />
+                    <div>
+                      <h3 className="font-bold text-white text-sm">Gemini 3 Flash Studio Copilot</h3>
+                      <span className="text-[10px] text-slate-400">Consulente Tecnico e Giuridico Arch. Romolo S. de Seneen</span>
+                    </div>
+                  </div>
+                  <button onClick={() => setIsAiModalOpen(false)} className="text-slate-400 hover:text-white">
+                    <Icon name="x" className="w-5 h-5" />
+                  </button>
+                </div>
+
+                {/* Question Prompt */}
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Chiedi su normative, tolleranze Salva Casa, Prezziario Puglia 2026, CILA Foggia..."
+                      value={aiPrompt}
+                      onChange={(e) => setAiPrompt(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') handleAskGeminiCopilot(); }}
+                      className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-purple-500"
+                    />
+                    <button
+                      onClick={() => handleAskGeminiCopilot()}
+                      disabled={aiLoading || !aiPrompt.trim()}
+                      className="bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1 shadow"
+                    >
+                      {aiLoading ? <Icon name="sync" className="w-3.5 h-3.5 animate-spin" /> : <Icon name="sparkles" className="w-3.5 h-3.5" />}
+                      <span>Invia</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* AI Result Box */}
+                <div className="flex-1 bg-slate-950 border border-slate-800 rounded-2xl p-4 overflow-y-auto text-xs font-mono leading-relaxed space-y-3">
+                  {aiLoading ? (
+                    <div className="flex flex-col items-center justify-center py-10 space-y-2">
+                      <div className="w-7 h-7 border-2 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+                      <span className="text-purple-300 font-sans text-xs animate-pulse">Consultazione normativa e Prezziario Puglia...</span>
+                    </div>
+                  ) : aiResultText ? (
+                    <div className="space-y-3 font-sans">
+                      <p className="whitespace-pre-wrap text-slate-200">{aiResultText}</p>
+                      {aiSources && aiSources.length > 0 && (
+                        <div className="pt-2 border-t border-slate-800 space-y-1">
+                          <span className="text-[10px] text-slate-400 font-bold block uppercase">Fonti Web Verificate:</span>
+                          <div className="flex flex-wrap gap-1.5">
+                            {aiSources.map((s, idx) => (
+                              <a
+                                key={idx}
+                                href={s.uri}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="bg-slate-900 border border-slate-800 text-purple-300 hover:text-white px-2 py-0.5 rounded text-[10px]"
+                              >
+                                {s.title}
+                              </a>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-center text-slate-500 py-10 font-sans">
+                      Digita un quesito tecnico o seleziona un'analisi fotografica.
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex justify-between items-center pt-2">
+                  <button
+                    onClick={() => handleCopyText(aiResultText, 'Risposta AI copiata!')}
+                    disabled={!aiResultText}
+                    className="text-purple-400 font-bold text-xs flex items-center gap-1 disabled:opacity-40"
+                  >
+                    <Icon name="copy" className="w-3.5 h-3.5" />
+                    <span>Copia Risposta</span>
+                  </button>
+                  <button onClick={() => setIsAiModalOpen(false)} className="bg-slate-800 px-4 py-1.5 rounded-xl text-xs">
+                    Chiudi
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Modal Aggiungi Vano Rilevato */}
+          {isNewVanoModalOpen && (
+            <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
+              <div className="bg-[#0b1022] border border-amber-500/40 rounded-3xl w-full max-w-md p-6 space-y-4 shadow-2xl">
+                <h3 className="font-bold text-white text-base">Registra Nuovo Vano Rilevato</h3>
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  const sup = Number(newVanoForm.lun) * Number(newVanoForm.lar);
+                  const vol = sup * Number(newVanoForm.alt);
+                  const rai = Number(newVanoForm.raiFinestraMq) > 0 ? (Number(newVanoForm.raiFinestraMq) / sup) : 0;
+                  const nuovo = {
+                    id: `v-${Date.now()}`,
+                    nome: newVanoForm.nome,
+                    lun: Number(newVanoForm.lun),
+                    lar: Number(newVanoForm.lar),
+                    alt: Number(newVanoForm.alt),
+                    sup: Number(sup.toFixed(2)),
+                    vol: Number(vol.toFixed(2)),
+                    rai: Number(rai.toFixed(3)),
+                    raiConforme: rai >= 0.125,
+                    note: newVanoForm.note || '-'
+                  };
+                  setCantieri(prev => prev.map(c => c.id === currentCantiere.id ? { ...c, rilievo: { ...c.rilievo, vani: [...(c.rilievo?.vani || []), nuovo] } } : c));
+                  setIsNewVanoModalOpen(false);
+                  showToast(`Vano "${nuovo.nome}" registrato nel libretto.`);
+                }} className="space-y-3 text-xs">
+                  <div>
+                    <label className="text-slate-300 block mb-1">Nome Ambiente</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Es. Camera Ospiti / Lavanderia"
+                      value={newVanoForm.nome}
+                      onChange={(e) => setNewVanoForm({ ...newVanoForm, nome: e.target.value })}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white"
+                    />
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <label className="text-slate-300 block mb-1">Lun (m)</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={newVanoForm.lun}
+                        onChange={(e) => setNewVanoForm({ ...newVanoForm, lun: e.target.value })}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-slate-300 block mb-1">Lar (m)</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={newVanoForm.lar}
+                        onChange={(e) => setNewVanoForm({ ...newVanoForm, lar: e.target.value })}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-slate-300 block mb-1">Alt (m)</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={newVanoForm.alt}
+                        onChange={(e) => setNewVanoForm({ ...newVanoForm, alt: e.target.value })}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white font-mono"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-slate-300 block mb-1">Superficie Finestra (mq)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={newVanoForm.raiFinestraMq}
+                      onChange={(e) => setNewVanoForm({ ...newVanoForm, raiFinestraMq: e.target.value })}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white font-mono"
+                    />
+                  </div>
+                  <div className="pt-2 flex justify-end gap-2">
+                    <button type="button" onClick={() => setIsNewVanoModalOpen(false)} className="bg-slate-800 px-4 py-2 rounded-xl text-xs">Annulla</button>
+                    <button type="submit" className="bg-amber-500 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs">Aggiungi</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* Modal Modifica/Nuova Diagnosi Preesistente */}
+          {isEditDiagnosisModalOpen && editingDiagnosis && (
+            <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
+              <div className="bg-[#0b1022] border border-amber-500/40 rounded-3xl w-full max-w-lg p-6 space-y-4 shadow-2xl">
+                <h3 className="font-bold text-white text-base">Modifica / Registra Diagnosi Preesistente</h3>
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  setCantieri(prev => prev.map(c => {
+                    if (c.id !== currentCantiere.id) return c;
+                    const exists = (c.diagnostica || []).some(d => d.id === editingDiagnosis.id);
+                    const updated = exists
+                      ? (c.diagnostica || []).map(d => d.id === editingDiagnosis.id ? editingDiagnosis : d)
+                      : [...(c.diagnostica || []), editingDiagnosis];
+                    return { ...c, diagnostica: updated };
+                  }));
+                  setIsEditDiagnosisModalOpen(false);
+                  showToast('Diagnosi aggiornata.');
+                }} className="space-y-3 text-xs">
+                  <div>
+                    <label className="text-slate-300 block mb-1">Titolo Patologia</label>
+                    <input
+                      type="text"
+                      required
+                      value={editingDiagnosis.titolo}
+                      onChange={(e) => setEditingDiagnosis({ ...editingDiagnosis, titolo: e.target.value })}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-slate-300 block mb-1">Categoria</label>
+                      <select
+                        value={editingDiagnosis.categoria}
+                        onChange={(e) => setEditingDiagnosis({ ...editingDiagnosis, categoria: e.target.value })}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white"
+                      >
+                        <option value="Strutture & Solai">Strutture & Solai</option>
+                        <option value="Murature & Umidità">Murature & Umidità</option>
+                        <option value="Termografia & Ponti Termici">Termografia & Ponti Termici</option>
+                        <option value="Impianti di Scarico">Impianti di Scarico</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-slate-300 block mb-1">Livello Gravità</label>
+                      <select
+                        value={editingDiagnosis.gravita}
+                        onChange={(e) => setEditingDiagnosis({ ...editingDiagnosis, gravita: e.target.value })}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white"
+                      >
+                        <option value="Bassa">Bassa</option>
+                        <option value="Media">Media</option>
+                        <option value="Alta">Alta</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-slate-300 block mb-1">Rilievo Strumentale</label>
+                    <textarea
+                      rows={3}
+                      required
+                      value={editingDiagnosis.rilievo}
+                      onChange={(e) => setEditingDiagnosis({ ...editingDiagnosis, rilievo: e.target.value })}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-amber-400 block mb-1 font-bold">Prescrizione Direzione Lavori</label>
+                    <textarea
+                      rows={3}
+                      required
+                      value={editingDiagnosis.prescrizione}
+                      onChange={(e) => setEditingDiagnosis({ ...editingDiagnosis, prescrizione: e.target.value })}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white"
+                    />
+                  </div>
+                  <div className="pt-2 flex justify-end gap-2">
+                    <button type="button" onClick={() => setIsEditDiagnosisModalOpen(false)} className="bg-slate-800 px-4 py-2 rounded-xl text-xs">Annulla</button>
+                    <button type="submit" className="bg-amber-500 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs">Salva</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* Modal Nuova Variante con Foto */}
+          {isNewVarianteModalOpen && (
+            <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
+              <div className="bg-[#0b1022] border border-amber-500/40 rounded-3xl w-full max-w-lg p-6 space-y-4 shadow-2xl">
+                <h3 className="font-bold text-white text-base">Registra Nuova Perizia di Variante</h3>
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  const nuova = {
+                    id: `var-${Date.now()}`,
+                    protocollo: `VAR-2026-${String((currentCantiere.varianti || []).length + 1).padStart(2, '0')}`,
+                    data: new Date().toISOString().split('T')[0],
+                    titolo: newVarianteForm.titolo,
+                    inquadramento: newVarianteForm.inquadramento,
+                    motivazione: newVarianteForm.motivazione,
+                    deltaImporto: Number(newVarianteForm.deltaImporto) || 0,
+                    prorogaGiorni: Number(newVarianteForm.prorogaGiorni) || 0,
+                    foto: newVarianteForm.foto,
+                    statoCliente: "In Valutazione D.L.",
+                    noteDL: "Sopralluogo programmato per verifica congruenza prezzi Puglia 2026."
+                  };
+                  setCantieri(prev => prev.map(c => c.id === currentCantiere.id ? { ...c, varianti: [nuova, ...(c.varianti || [])] } : c));
+                  setIsNewVarianteModalOpen(false);
+                  showToast('Richiesta registrata con successo!');
+                }} className="space-y-3 text-xs">
+                  <div>
+                    <label className="text-slate-300 block mb-1">Oggetto della Modifica</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Es. Spostamento punto luce e aggiunta presa a pavimento"
+                      value={newVarianteForm.titolo}
+                      onChange={(e) => setNewVarianteForm({ ...newVarianteForm, titolo: e.target.value })}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-slate-300 block mb-1">Motivazione</label>
+                    <textarea
+                      rows={2}
+                      required
+                      placeholder="Descrivi la richiesta o il dettaglio tecnico..."
+                      value={newVarianteForm.motivazione}
+                      onChange={(e) => setNewVarianteForm({ ...newVarianteForm, motivazione: e.target.value })}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-slate-300 block mb-1">Delta Importo (€)</label>
+                      <input
+                        type="number"
+                        value={newVarianteForm.deltaImporto}
+                        onChange={(e) => setNewVarianteForm({ ...newVarianteForm, deltaImporto: e.target.value })}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-slate-300 block mb-1">Proroga Giorni (gg)</label>
+                      <input
+                        type="number"
+                        value={newVarianteForm.prorogaGiorni}
+                        onChange={(e) => setNewVarianteForm({ ...newVarianteForm, prorogaGiorni: e.target.value })}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white font-mono"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-slate-300 block mb-1">Carica Fotografia dal Sopralluogo</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onload = (ev) => setNewVarianteForm(prev => ({ ...prev, foto: ev.target?.result }));
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white file:bg-amber-500 file:text-slate-950 file:border-0 file:rounded-lg file:px-2 file:py-1 file:text-xs file:font-bold"
+                    />
+                  </div>
+                  <div className="pt-2 flex justify-end gap-2">
+                    <button type="button" onClick={() => setIsNewVarianteModalOpen(false)} className="bg-slate-800 px-4 py-2 rounded-xl text-xs">Annulla</button>
+                    <button type="submit" className="bg-amber-500 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs">Invia</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* Modal Emetti Certificato di Pagamento CdP */}
+          {isNewCdPModalOpen && (
+            <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
+              <div className="bg-[#0b1022] border border-emerald-500/40 rounded-3xl w-full max-w-md p-6 space-y-4 shadow-2xl">
+                <h3 className="font-bold text-white text-base">Emetti Certificato di Pagamento (CdP)</h3>
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  const netto = Number(newCdPForm.importoLavoriNetto) || 0;
+                  const sic = Number(newCdPForm.quotaSicurezzaPSC) || 0;
+                  const rit = (netto + sic) * 0.005;
+                  const imponibile = (netto + sic) - rit;
+                  const iva = imponibile * 0.10;
+                  const tot = imponibile + iva;
+                  const nuovo = {
+                    id: `cdp-${Date.now()}`,
+                    numero: Number(newCdPForm.numero),
+                    data: new Date().toISOString().split('T')[0],
+                    importoLavoriNetto: netto,
+                    quotaSicurezzaPSC: sic,
+                    ritenutaGaranzia: Number(rit.toFixed(2)),
+                    iva10: Number(iva.toFixed(2)),
+                    totaleCertificato: Number(tot.toFixed(2)),
+                    stato: "In Emissione",
+                    note: newCdPForm.note
+                  };
+                  setCantieri(prev => prev.map(c => c.id === currentCantiere.id ? { ...c, certificatiPagamento: [...(c.certificatiPagamento || []), nuovo] } : c));
+                  setIsNewCdPModalOpen(false);
+                  showToast(`Certificato di Pagamento n. ${nuovo.numero} emesso!`);
+                }} className="space-y-3 text-xs">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-slate-300 block mb-1">Numero CdP</label>
+                      <input
+                        type="number"
+                        value={newCdPForm.numero}
+                        onChange={(e) => setNewCdPForm({ ...newCdPForm, numero: e.target.value })}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-slate-300 block mb-1">Quota Sicurezza (€)</label>
+                      <input
+                        type="number"
+                        value={newCdPForm.quotaSicurezzaPSC}
+                        onChange={(e) => setNewCdPForm({ ...newCdPForm, quotaSicurezzaPSC: e.target.value })}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white font-mono"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-slate-300 block mb-1">Importo Lavori Netti (€)</label>
+                    <input
+                      type="number"
+                      required
+                      value={newCdPForm.importoLavoriNetto}
+                      onChange={(e) => setNewCdPForm({ ...newCdPForm, importoLavoriNetto: e.target.value })}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-slate-300 block mb-1">Note Tecniche SAL</label>
+                    <textarea
+                      rows={2}
+                      value={newCdPForm.note}
+                      onChange={(e) => setNewCdPForm({ ...newCdPForm, note: e.target.value })}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2 text-white"
+                    />
+                  </div>
+                  <div className="pt-2 flex justify-end gap-2">
+                    <button type="button" onClick={() => setIsNewCdPModalOpen(false)} className="bg-slate-800 px-4 py-2 rounded-xl text-xs">Annulla</button>
+                    <button type="submit" className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 py-2 rounded-xl text-xs">Emetti CdP</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* Modal Nuovo Rapporto Giornale */}
+          {isNewGiornaleModalOpen && (
+            <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
+              <div className="bg-[#0b1022] border border-amber-500/40 rounded-3xl w-full max-w-md p-6 space-y-4 shadow-2xl">
+                <h3 className="font-bold text-white text-base">Registra Rapporto Giornale Lavori</h3>
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  const nuovo = {
+                    id: `gl-${Date.now()}`,
+                    data: newGiornaleForm.data,
+                    meteo: newGiornaleForm.meteo,
+                    operai: Number(newGiornaleForm.operai),
+                    imprese: newGiornaleForm.imprese,
+                    attivita: newGiornaleForm.attivita,
+                    ordiniDL: newGiornaleForm.ordiniDL
+                  };
+                  setCantieri(prev => prev.map(c => c.id === currentCantiere.id ? { ...c, giornale: [nuovo, ...(c.giornale || [])] } : c));
+                  setIsNewGiornaleModalOpen(false);
+                  showToast('Rapporto registrato nel Giornale Lavori.');
+                }} className="space-y-3 text-xs">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-slate-300 block mb-1">Data</label>
+                      <input
+                        type="date"
+                        value={newGiornaleForm.data}
+                        onChange={(e) => setNewGiornaleForm({ ...newGiornaleForm, data: e.target.value })}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-slate-300 block mb-1">N. Operai</label>
+                      <input
+                        type="number"
+                        value={newGiornaleForm.operai}
+                        onChange={(e) => setNewGiornaleForm({ ...newGiornaleForm, operai: e.target.value })}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white font-mono"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-slate-300 block mb-1">Meteo</label>
+                    <input
+                      type="text"
+                      value={newGiornaleForm.meteo}
+                      onChange={(e) => setNewGiornaleForm({ ...newGiornaleForm, meteo: e.target.value })}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-slate-300 block mb-1">Lavorazioni Eseguite</label>
+                    <textarea
+                      rows={3}
+                      required
+                      value={newGiornaleForm.attivita}
+                      onChange={(e) => setNewGiornaleForm({ ...newGiornaleForm, attivita: e.target.value })}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-amber-400 block mb-1 font-bold">Ordini di Servizio D.L.</label>
+                    <textarea
+                      rows={2}
+                      value={newGiornaleForm.ordiniDL}
+                      onChange={(e) => setNewGiornaleForm({ ...newGiornaleForm, ordiniDL: e.target.value })}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2 text-white"
+                    />
+                  </div>
+                  <div className="pt-2 flex justify-end gap-2">
+                    <button type="button" onClick={() => setIsNewGiornaleModalOpen(false)} className="bg-slate-800 px-4 py-2 rounded-xl text-xs">Annulla</button>
+                    <button type="submit" className="bg-amber-500 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs">Registra</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+        </div>
+      );
+    }
+
+    try {
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(<App />);
+    } catch (err) {
+      console.error("Mounting error:", err);
+      document.getElementById('root').innerHTML = `
+        <div class="p-8 text-rose-400 bg-slate-950 font-mono text-xs">
+          Errore di caricamento: ${err.message}<br/>
+          <button onclick="localStorage.clear();location.reload();" class="mt-4 px-4 py-2 bg-amber-500 text-slate-950 font-bold rounded-xl">
+            Ripristina Dati Iniziali
+          </button>
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>
